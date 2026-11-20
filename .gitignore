@@ -1,0 +1,22 @@
+# Secrets
+.env
+env.bak
+*.bak
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Runtime output
+*.log
+backend/test_*.wav
+
+# Android / Gradle
+android/.gradle/
+android/.kotlin/
+android/build/
+android/app/build/
+android/local.properties
+*.apk
+.idea/

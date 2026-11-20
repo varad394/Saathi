@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Saathi barebones test</title>
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+<style>
+  body { font: 15px system-ui, sans-serif; max-width: 760px; margin: 24px auto; padding: 0 16px; }
+  button { font-size: 15px; padding: 10px 16px; margin: 4px 6px 4px 0; cursor: pointer; }
+  #log { background: #111; color: #ddd; padding: 12px; height: 380px; overflow: auto; font: 12px/1.45 ui-monospace, monospace; white-space: pre-wrap; }
+  .lvl { height: 10px; background: #eee; margin: 8px 0; } .lvl div { height: 100%; width: 0; background: #2a7; }
+</style>
+</head>
+<body>
+<h2>Saathi barebones: laptop as the phone</h2>
+<p>Joins channel <b>saathi-test</b> as uid 1001 (same as the Android app). Use headphones, or keep the volume low so the agent doesn't hear itself.</p>
+<div>Microphone: <select id="micsel"></select></div>
+<button id="start">1. Start (Sarvam ASR)</button>
+<button id="startares">1b. Start (Agora ASR, English only - diagnostic)</button>
+<button id="speak" disabled>Speak fixed line</button>
+<button id="stop" disabled>Stop</button>
+<button id="status">Status / timeline</button>
+<div>My mic level (must move when you talk)</div><div class="lvl"><div id="miclvl" style="background:#27a"></div></div>
+<div>Agent voice level</div><div class="lvl"><div id="lvl"></div></div>
+<div id="log"></div>
+<script>
+const $ = id => document.getElementById(id);
+const t0 = () => window._t0 || performance.now();
+const log = (...a) => { const s = `[+${((performance.now() - t0()) / 1000).toFixed(2)}s] ` + a.map(x => typeof x === 'string' ? x : JSON.stringify(x)).join(' '); $('log').textContent += s + '\n'; $('log').scrollTop = 1e9; };
+let client, mic, gotFirstAudio = false;
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, ...opts });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(`${path} ${r.status} ${JSON.stringify(j)}`);
+  return j;
+}
+
+async function startWith(asr) {
+  window._t0 = performance.now(); gotFirstAudio = false; $('log').textContent = '';
+  try {
+    log('POST /session/start ...');
+    const s = await api('/session/start?asr=' + asr);
+    log('agent', s.agent_id, s.status);
+    client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+    client.on('user-published', async (user, type) => {
+      if (type !== 'audio') return;
+      await client.subscribe(user, 'audio');
+      user.audioTrack.play();
+      log(`agent uid ${user.uid} audio subscribed`);
+      const iv = setInterval(() => {
+        const v = user.audioTrack ? user.audioTrack.getVolumeLevel() : 0;
+        $('lvl').style.width = (v * 100) + '%';
+        if (v > 0.05 && !gotFirstAudio) { gotFirstAudio = true; log('>>> FIRST AGENT AUDIO (start -> sound latency above)'); }
+      }, 50);
+      user._iv = iv;
+    });
+    client.on('user-left', u => log(`uid ${u.uid} left`));
+    await client.join(s.app_id, s.channel, s.token, s.uid);
+    log('joined RTC as', s.uid);
+    mic = await AgoraRTC.createMicrophoneAudioTrack({ AEC: true, ANS: true, AGC: true, microphoneId: $('micsel').value || undefined });
+    log('mic device:', mic.getTrackLabel());
+    setInterval(() => { if (mic) $('miclvl').style.width = (mic.getVolumeLevel() * 100) + '%'; }, 50);
+    await client.publish([mic]);
+    log('mic published - speak now');
+    $('speak').disabled = $('stop').disabled = false;
+  } catch (e) { log('ERROR', e.message || e); }
+}
+$('start').onclick = () => startWith('sarvam');
+$('startares').onclick = () => startWith('ares');
+(async () => { try { const ms = await AgoraRTC.getMicrophones(); $('micsel').innerHTML = ms.map(m => `<option value="${m.deviceId}">${m.label || m.deviceId}</option>`).join(''); } catch (e) { log('mic list error', e.message); } })();
+
+$('speak').onclick = async () => { try { log('speak ->', await api('/session/speak', { body: '{}' })); } catch (e) { log('ERROR', e.message); } };
+
+$('stop').onclick = async () => {
+  try { log('stop ->', await api('/session/stop')); } catch (e) { log('ERROR', e.message); }
+  if (mic) { mic.close(); mic = null; }
+  if (client) { await client.leave(); client = null; }
+  $('speak').disabled = $('stop').disabled = true;
+};
+
+$('status').onclick = async () => { const r = await fetch('/session/status'); const j = await r.json();
+  log('timeline', j.timeline);
+  (j.agora_history || []).forEach(h => log(`  ${h.role} [${(h.metadata || {}).source || ''}]: ${h.content}`)); };
+</script>
+</body>
+</html>
