@@ -25,3 +25,4 @@ android/local.properties
 api.txt
 *.key
 backend/data/profile.local.json
+backend/data/settings.json

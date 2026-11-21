@@ -11,6 +11,7 @@ from pydantic import BaseModel
 
 import agora
 import config as C
+import settings as S
 import workflow as W
 
 router = APIRouter()
@@ -57,8 +58,25 @@ async def simulate(peak_g: float = 4.0, asr: str | None = None):
     if not C.PUBLIC_BASE_URL:
         raise HTTPException(400, "PUBLIC_BASE_URL is empty: start the tunnel and set it in .env")
     res = await W.on_impact(peak_g, asr_vendor=asr if asr in ("sarvam", "ares") else None)
+    res["mic"] = {"aec": S.get("mic_aec"), "ans": S.get("mic_ans"), "agc": S.get("mic_agc")}
     await W.on_confirmed(peak_g, 110.0, 0.05)
     return res
+
+
+# ---------------------------------------------------------------- runtime settings (dashboard / phone app)
+@router.get("/settings")
+def get_settings():
+    return S.all_()
+
+
+@router.post("/settings")
+def set_settings(patch: dict):
+    return S.update(patch)
+
+
+@router.post("/settings/reset")
+def reset_settings():
+    return S.reset()
 
 
 # ---------------------------------------------------------------- incident (dashboard, follow-up)

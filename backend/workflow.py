@@ -18,6 +18,7 @@ import compose
 import config as C
 import lang as L
 import protocol as P
+import settings as S
 
 log = logging.getLogger("workflow")
 _DATA = pathlib.Path(__file__).parent / "data"
@@ -26,12 +27,7 @@ if (_DATA / "profile.local.json").exists():  # real demo numbers, git-ignored
     PROFILE |= {k: v for k, v in json.loads((_DATA / "profile.local.json").read_text(encoding="utf-8")).items() if not k.startswith("_")}
 RIDER = PROFILE["rider"]
 
-# Timers (scenario_tree.md section 2)
-RIDER_CHECK_S = 20
-CANCEL_UNDO_S = 10
-LISTEN_AFTER_CANCEL_S = 60  # keep listening for 'help' after a cancel (the ack promises it)
-RIDER_SILENT_S = 15
-ANNOUNCE_EVERY_S = 35
+# Timers: live values come from settings.py (changeable from the dashboard / phone). Fixed ones:
 ANNOUNCE_MAX = 8
 RECHECK_EVERY_S = 120
 STOP_DELAY_S = 25
@@ -50,7 +46,6 @@ RIDER_LINES = {
 }
 GREETING_SCENE = ("साथी बोल रही हूँ। आप ठीक हैं? ठीक नहीं बोला, तो मैं मदद बुला लूँगी। "
                   "Saathi here. Are you okay? Say I'm fine, or I'll call your family and an ambulance.")
-GREETING_S = 9  # roughly how long the greeting takes to speak; the 20 s answer window starts after it
 
 
 @dataclass
@@ -309,7 +304,7 @@ async def on_impact(peak_g: float, lat: float | None = None, lon: float | None =
     global INC
     if INC:
         await stop_all(INC)  # also cancels its timers, so they can never touch the new incident
-    INC = Incident(peak_g=peak_g, asr_vendor=asr_vendor or C.ASR_VENDOR)
+    INC = Incident(peak_g=peak_g, asr_vendor=asr_vendor or S.get('asr_vendor'))
     INC.location = {"text": PROFILE["demo_location"]["text"],
                     "lat": lat if lat is not None else PROFILE["demo_location"]["lat"],
                     "lon": lon if lon is not None else PROFILE["demo_location"]["lon"]}
@@ -330,7 +325,7 @@ async def on_confirmed(peak_g: float, angle_deg: float, still_std_g: float) -> N
         return
     INC.peak_g = max(INC.peak_g, peak_g)
     set_state("DETECTED", f"still and tilted {angle_deg:.0f} deg")
-    set_state("RIDER_CHECK", f"{RIDER_CHECK_S} s to answer after the greeting")
+    set_state("RIDER_CHECK", f"{S.get('rider_check_s')} s to answer after the greeting")
     spawn(_rider_check_timer())
 
 
@@ -342,23 +337,23 @@ async def on_detector_cancel(reason: str) -> None:
 
 
 async def _rider_check_timer() -> None:
-    """The rider gets RIDER_CHECK_S seconds AFTER the greeting. The greeting plays when the phone joins the channel,
+    """The rider gets S.get('rider_check_s') seconds AFTER the greeting. The greeting plays when the phone joins the channel,
     so wait for the join report (dashboard / app call /api/s/{sid}/joined); fall back after 15 s if none arrives."""
     inc = INC
     waited = 0.0
     while inc.scene().status != "joined" and waited < 15 and INC is inc:
         await asyncio.sleep(0.25)
         waited += 0.25
-    inc.rider_check_deadline = time.time() + GREETING_S + RIDER_CHECK_S
-    ev("rider_check_window", seconds=GREETING_S + RIDER_CHECK_S, phone_joined=inc.scene().status == "joined")
-    await asyncio.sleep(GREETING_S + RIDER_CHECK_S)
+    inc.rider_check_deadline = time.time() + S.get('greeting_s') + S.get('rider_check_s')
+    ev("rider_check_window", seconds=S.get('greeting_s') + S.get('rider_check_s'), phone_joined=inc.scene().status == "joined")
+    await asyncio.sleep(S.get('greeting_s') + S.get('rider_check_s'))
     if INC is inc and inc.state == "RIDER_CHECK":
         await escalate("no answer from the rider in 20 s", rider_talking=False)
 
 
 async def _cancel_finalize() -> None:
     inc = INC
-    await asyncio.sleep(CANCEL_UNDO_S)
+    await asyncio.sleep(S.get('cancel_undo_s'))
     if INC is not inc or inc.state != "CANCEL_PENDING":
         return
     set_state("CANCELLED", "rider said he is fine")
@@ -366,9 +361,9 @@ async def _cancel_finalize() -> None:
         for s in INC.by_role("family"):
             await say_composed(s, f"False alarm. {RIDER['name']} answered himself and says he is okay. Sorry for the worry.")
         action("false_alarm_callback", "sent")
-    await asyncio.sleep(LISTEN_AFTER_CANCEL_S)
+    await asyncio.sleep(S.get('listen_after_cancel_s'))
     if INC is inc and inc.state == "CANCELLED":  # nobody asked for help: end the call
-        ev("listening_ended", after_s=LISTEN_AFTER_CANCEL_S)
+        ev("listening_ended", after_s=S.get('listen_after_cancel_s'))
         await stop_all(inc)
 
 
@@ -387,11 +382,11 @@ async def escalate(reason: str, rider_talking: bool) -> None:
 async def _bystander_watch(rider_talking: bool) -> None:
     if rider_talking:  # C4: rider answered, then went silent
         INC.last_heard = time.time()
-        while INC.state == "BYSTANDER" and time.time() - INC.last_heard < RIDER_SILENT_S:
+        while INC.state == "BYSTANDER" and time.time() - INC.last_heard < S.get('rider_silent_s'):
             await asyncio.sleep(1)
         if INC.state != "BYSTANDER":
             return
-        record_fact("rider_stopped_responding", f"no answer for {RIDER_SILENT_S} s", "system")
+        record_fact("rider_stopped_responding", f"no answer for {S.get('rider_silent_s')} s", "system")
     n = 0
     while INC.state == "BYSTANDER" and "engaged" not in INC.flags and n < ANNOUNCE_MAX:
         INC.flags.add("announced")
@@ -399,7 +394,7 @@ async def _bystander_watch(rider_talking: bool) -> None:
             await say(INC.scene(), P.text("AN1", lg if lg in P.LINE_LANGS else "en"))
         ev("announced", n=n + 1)
         n += 1
-        await asyncio.sleep(ANNOUNCE_EVERY_S)
+        await asyncio.sleep(S.get('announce_every_s'))
 
 
 async def _recheck_loop() -> None:  # E5: unconscious but breathing -> ask every 2 min

@@ -26,6 +26,12 @@ _HELP = [r"\bhelp", r"\bpain", r"\bhurt", r"\bblood", r"\bbleed", r"\bambulance"
          r"ಸಹಾಯ", r"ನೋವು", r"ರಕ್ತ", r"ಕಾಪಾಡಿ", r"मदत", r"वेदना", r"बरा नाही"]
 
 
+_NO_HELP = [r"(don'?t|do not|no|not)\s+(need\s+)?(any\s+)?help", r"\bno need\b", r"मदद नहीं", r"मदद की ज़?रूरत नहीं",
+            r"ಸಹಾಯ ಬೇಡ", r"ಬೇಡ", r"मदत नको"]
+
+
 def rider_needs_help(text: str) -> bool:
     t = (text or "").lower()
+    if any(re.search(p, t) for p in _NO_HELP):
+        return False  # "I don't need help" must never escalate; the LLM handles anything ambiguous
     return any(re.search(p, t) for p in _HELP)

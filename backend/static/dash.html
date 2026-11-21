@@ -56,7 +56,11 @@
     <h2 style="margin-top:14px">Follow-up summary</h2><div id="summary" class="mute">—</div>
   </section>
   <section>
-    <h2>Timeline</h2><div id="timeline"></div>
+    <h2>Settings (apply to the next crash; no redeploy)</h2>
+    <div id="settings" style="display:grid;grid-template-columns:1fr 110px;gap:4px 8px;font-size:13px"></div>
+    <button id="saveSettings" style="margin-top:8px">Save settings</button> <button id="resetSettings">Reset</button>
+    <span id="setmsg" class="mute"></span>
+    <h2 style="margin-top:14px">Timeline</h2><div id="timeline"></div>
   </section>
 </main>
 <script>
@@ -87,9 +91,8 @@ async function joinAsPhone(info) {
   });
   await client.join(info.app_id, info.channel, info.token, info.uid);
   // Headsets: no echo to cancel, and noise suppression clips soft word onsets -> turn both off, keep gain control.
-  const label = ($('micsel').selectedOptions[0] || {}).text || '';
-  const headset = /hands-?free|headset|buds|airpods|bluetooth|earphone/i.test(label);
-  mic = await AgoraRTC.createMicrophoneAudioTrack({ AEC: !headset, ANS: !headset, AGC: true,
+  const m = info.mic || (await (await fetch('/settings')).json());  // processing comes from the settings
+  mic = await AgoraRTC.createMicrophoneAudioTrack({ AEC: !!(m.aec ?? m.mic_aec), ANS: !!(m.ans ?? m.mic_ans), AGC: !!(m.agc ?? m.mic_agc),
                                                      microphoneId: $('micsel').value || undefined });
   setInterval(() => { if (mic) $('miclvl').style.width = (mic.getVolumeLevel() * 100) + '%'; }, 80);
   await client.publish([mic]);
@@ -134,6 +137,22 @@ async function refresh() {
     const { t, clock, kind, ...rest } = e;
     return `<div><span class="mute">+${t}s</span> <b>${esc(kind)}</b> ${esc(JSON.stringify(rest))}</div>`; }).join('');
 }
+async function loadSettings() {
+  const st = await (await fetch('/settings')).json();
+  $('settings').innerHTML = Object.entries(st).map(([k, v]) => `<label for="set_${k}">${esc(k)}</label>` + (typeof v === 'boolean'
+    ? `<input id="set_${k}" type="checkbox" ${v ? 'checked' : ''}>`
+    : k === 'asr_vendor' ? `<select id="set_${k}"><option ${v==='sarvam'?'selected':''}>sarvam</option><option ${v==='ares'?'selected':''}>ares</option></select>`
+    : `<input id="set_${k}" value="${esc(v)}" style="width:100px">`)).join('');
+  $('asrsel').value = st.asr_vendor;
+}
+$('saveSettings').onclick = async () => {
+  const st = await (await fetch('/settings')).json(), patch = {};
+  for (const k of Object.keys(st)) { const el = $('set_' + k); patch[k] = el.type === 'checkbox' ? el.checked : el.value; }
+  await fetch('/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch) });
+  $('setmsg').textContent = 'saved ' + new Date().toLocaleTimeString(); loadSettings();
+};
+$('resetSettings').onclick = async () => { await fetch('/settings/reset', { method: 'POST' }); loadSettings(); $('setmsg').textContent = 'reset'; };
+loadSettings();
 setInterval(refresh, 1000); refresh();
 </script>
 </body>

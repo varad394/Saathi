@@ -13,6 +13,7 @@ import time
 import httpx
 
 import config as C
+import settings as S
 from agora_token.RtcTokenBuilder2 import Role_Publisher, RtcTokenBuilder
 
 log = logging.getLogger("agora")
@@ -54,6 +55,10 @@ def join_payload(*, name: str, channel: str, agent_uid: int, user_uid: int, llm_
                 "max_history": 20,
                 "params": {"model": C.LLM_MODEL},
             },
+            # Voice activity detection: a higher speech_threshold ignores quieter, distant voices (room chatter).
+            "turn_detection": {"mode": "default", "config": {
+                "speech_threshold": S.get("speech_threshold"),
+                "end_of_speech": {"mode": "vad", "vad_config": {"silence_duration_ms": S.get("silence_ms")}}}},
             "tts": {
                 "vendor": "murf",
                 "params": {"api_key": C.MURF_API_KEY, "voiceId": voice, "locale": locale,
@@ -65,7 +70,7 @@ def join_payload(*, name: str, channel: str, agent_uid: int, user_uid: int, llm_
 
 def asr_block(vendor: str, lang: str) -> dict:
     if vendor == "ares":  # Agora's built-in ASR: no vendor key; several languages as one comma-separated string
-        return {"vendor": "ares", "language": C.ARES_SCENE_LANGS if lang == "unknown" else lang}
+        return {"vendor": "ares", "language": S.get("ares_langs") if lang == "unknown" else lang}
     # Sarvam: "unknown" = automatic language detection (scene); a fixed code for family / 112
     return {"vendor": "sarvam", "language": "en-IN" if lang == "unknown" else lang,
             "params": {"api_key": C.SARVAM_API_KEY, "language": lang}}

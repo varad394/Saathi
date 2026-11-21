@@ -39,7 +39,9 @@ async def fake_query(agent_id):
 
 
 agora.join, agora.speak, agora.leave, agora.query = fake_join, fake_speak, fake_leave, fake_query
-W.RIDER_CHECK_S, W.RIDER_SILENT_S, W.CANCEL_UNDO_S, W.ANNOUNCE_EVERY_S, W.STOP_DELAY_S = 6, 3, 2, 60, 1
+import settings as S  # noqa: E402
+S._cur.update(rider_check_s=6, rider_silent_s=3, cancel_undo_s=2, announce_every_s=60, greeting_s=0)  # in memory only
+W.STOP_DELAY_S = 1
 
 import main  # noqa: E402
 
