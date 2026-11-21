@@ -528,7 +528,7 @@ The rule is to **always do the most that still works, and keep speaking**. Every
 
 **Reaching help**
 4. **Direct 112 integration**: data sent to India's emergency response system instead of a voice briefing.
-5. **Real phone calls over SIP** for family, 112 and hospitals (Agora outbound calling with a SIP trunk).
+5. **Real phone calls over SIP** for family, 112 and hospitals. Checked on 21 Nov 2026: Agora's Preview platform API (`POST /v1/projects/{appid}/sessions` with `transport.to` set to the E.164 number) plus a saved agent, a phone number imported with its SIP trunk (`POST /v1/projects/{appid}/numbers`), and a Twilio Elastic SIP Trunk that allow-lists Agora's +91 outbound IPs. This needs a paid Twilio account. Today Mom joins through the link in her SMS.
 6. **Satellite SOS** on newer phones that have it `[verify availability in India]`.
 7. **Alerting nearby Saathi users** over Bluetooth when there's no network at all.
 8. **Hospital pre-alert integration**, and choosing the nearest trauma centre using live capacity.

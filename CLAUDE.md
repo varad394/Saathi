@@ -82,6 +82,7 @@ android/                Kotlin app (com.saathi.app): on-device crash detector + 
 - **Murf model string** is `falcon-2.1`; Murf's voices API accepts only `gen2` and `falcon-2.1`. **Agora can't change the TTS locale mid-session**, so each party gets its own session.
 - **`speak` text limit is 512 bytes.** Kannada is about 3 bytes per character. `agora.split_for_speak` handles long text.
 - **Speech recognition** is Sarvam, because Murf isn't an Agora ASR option. Agora doesn't pass Sarvam's detected-language code to the LLM, so `lang.py` detects it.
+- **SIP calling to real phones is deferred.** It needs Agora's Preview `/v1 sessions` API, a saved agent, and a paid Twilio SIP trunk (details in scenario_tree.md section 12, item 5). The demo uses join links sent by SMS from the rider's phone.
 - **About 300 free Agora ConvoAI minutes in total.** Each full test runs three agents. Stop agents after tests (dashboard: "Stop all agents").
 - **Windows Git Bash:** use `PYTHONIOENCODING=utf-8` for Indic output. **ColorOS** blocks `pm grant`, so permissions must be accepted on the phone.
 - **Repo:** github.com/varad394/Saathi. Work on `develop`, merge to `main` when it's demo-ready.
