@@ -53,6 +53,7 @@ SCENE_BY_STATE = {
     "IMPACT": ["log_rider_status"], "DETECTED": ["log_rider_status"],
     "RIDER_CHECK": ["log_rider_status", "record_facts"],
     "CANCEL_PENDING": ["log_rider_status"],
+    "CANCELLED": ["log_rider_status"],
     "BYSTANDER": ["log_rider_status", "record_facts", "say_line", "ask_ambulance", "answer_question", "set_destination", "ambulance_arrived", "read_handover"],
     "COORDINATE": ["log_rider_status", "record_facts", "say_line", "ask_ambulance", "answer_question", "set_destination", "ambulance_arrived", "read_handover"],
     "HANDOVER": ["record_facts", "say_line", "answer_question", "set_destination", "read_handover", "close_incident"],

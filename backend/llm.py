@@ -72,6 +72,9 @@ async def chat_completions(sid: str, req: Request):
     if s.role == "scene" and inc.state in ("IMPACT", "DETECTED", "RIDER_CHECK") and intent.rider_says_fine(last_user):
         turn["say"] = W.rider_status("ok", last_user).get("_say")  # C1: deterministic cancel, no LLM round
         provider = "intent"
+    elif s.role == "scene" and inc.state in ("RIDER_CHECK", "CANCEL_PENDING", "CANCELLED") and intent.rider_needs_help(last_user):
+        turn["say"] = W.rider_status("help", last_user).get("_say")  # C3 / changed his mind: escalate at once
+        provider = "intent"
     try:
         for _ in range(0 if turn["say"] else MAX_ROUNDS):
             text, calls, provider = await llmclient.complete(messages, tool_defs, role=s.role, max_tokens=400)

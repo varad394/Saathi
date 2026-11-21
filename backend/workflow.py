@@ -29,6 +29,7 @@ RIDER = PROFILE["rider"]
 # Timers (scenario_tree.md section 2)
 RIDER_CHECK_S = 20
 CANCEL_UNDO_S = 10
+LISTEN_AFTER_CANCEL_S = 60  # keep listening for 'help' after a cancel (the ack promises it)
 RIDER_SILENT_S = 15
 ANNOUNCE_EVERY_S = 35
 ANNOUNCE_MAX = 8
@@ -365,8 +366,10 @@ async def _cancel_finalize() -> None:
         for s in INC.by_role("family"):
             await say_composed(s, f"False alarm. {RIDER['name']} answered himself and says he is okay. Sorry for the worry.")
         action("false_alarm_callback", "sent")
-    await asyncio.sleep(8)
-    await stop_all(inc)
+    await asyncio.sleep(LISTEN_AFTER_CANCEL_S)
+    if INC is inc and inc.state == "CANCELLED":  # nobody asked for help: end the call
+        ev("listening_ended", after_s=LISTEN_AFTER_CANCEL_S)
+        await stop_all(inc)
 
 
 async def escalate(reason: str, rider_talking: bool) -> None:
@@ -495,7 +498,7 @@ def rider_status(status: str, words: str) -> dict:
             return {"_say": RIDER_LINES["cancel_ack"][lg]}
         spawn(escalate(f"rider: {words or status}", rider_talking=True))
         return {"_say": RIDER_LINES["escalate_ack"][lg]}
-    if INC.state == "CANCEL_PENDING" and status != "ok":
+    if INC.state in ("CANCEL_PENDING", "CANCELLED") and status != "ok":
         spawn(escalate(f"rider changed his mind: {words}", rider_talking=True))
         return {"_say": RIDER_LINES["escalate_ack"][lg]}
     if status == "ok" and INC.state in ("BYSTANDER", "COORDINATE"):  # C10: recorded, not acted on
@@ -691,7 +694,7 @@ SCENE_STATE_HINTS = {
     "COORDINATE": "A bystander is helping. Put EVERY observation in their latest message into ONE record_facts call (e.g. breathing_normal AND heavy_bleeding). Ask open questions from STATUS and call answer_question. Whenever a hospital is named, ALWAYS call set_destination (also when answering a question). 'Ambulance is here' -> ambulance_arrived.",
     "HANDOVER": "The ambulance crew is here. If a paramedic or doctor asks about the patient, call read_handover. When they leave with him, call close_incident.",
     "CLOSED": "The incident is closed. Reply briefly.",
-    "CANCELLED": "The alert was cancelled. Reply briefly.",
+    "CANCELLED": "The alert was cancelled, but you keep listening for a minute. If he asks for help, mentions pain or says he is not okay, call log_rider_status with help. Otherwise reply briefly.",
 }
 
 FAMILY_PROMPT = """You are Saathi, on a phone call with the {relation} of {rider}, who has had a road accident. Speak ONLY {lang}, in its native script, calmly, 1-2 short sentences.

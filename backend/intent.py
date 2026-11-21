@@ -19,3 +19,13 @@ def rider_says_fine(text: str) -> bool:
     if any(re.search(p, t) for p in _DANGER):
         return False
     return any(re.search(p, t) for p in _OK)
+
+
+_HELP = [r"\bhelp", r"\bpain", r"\bhurt", r"\bblood", r"\bbleed", r"\bambulance", r"can'?t breathe", r"\bnot (fine|ok|okay|good)",
+         r"\bmadad\b", r"\bdard\b", r"मदद", r"दर्द", r"खून", r"ठीक नहीं", r"साँस नहीं", r"बचाओ",
+         r"ಸಹಾಯ", r"ನೋವು", r"ರಕ್ತ", r"ಕಾಪಾಡಿ", r"मदत", r"वेदना", r"बरा नाही"]
+
+
+def rider_needs_help(text: str) -> bool:
+    t = (text or "").lower()
+    return any(re.search(p, t) for p in _HELP)
