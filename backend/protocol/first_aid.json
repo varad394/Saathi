@@ -86,6 +86,18 @@
       "kn": "ಸಹಾಯ ಮಾಡಿದರೆ ನಿಮಗೆ ಯಾವುದೇ ತೊಂದರೆ ಆಗುವುದಿಲ್ಲ. ನಿಮ್ಮ ಹೆಸರು ಹೇಳುವ ಅಗತ್ಯವಿಲ್ಲ. ಸಾಕ್ಷಿಯಾಗಲು ಯಾರೂ ಒತ್ತಾಯಿಸುವಂತಿಲ್ಲ, ಆಸ್ಪತ್ರೆ ಹಣ ಕೇಳುವಂತಿಲ್ಲ."
     },
     {
+      "id": "STAY1",
+      "group": "scene",
+      "node": "D15",
+      "when": "A bystander says they are leaving or have to go",
+      "src": [
+        "IFAM"
+      ],
+      "en": "Please don't leave him alone. If you have to go, ask someone else to stay with him, and keep this phone close to him with the speaker on.",
+      "hi": "कृपया इन्हें अकेला मत छोड़िए। अगर आपको जाना ही है, तो किसी और को इनके पास रुकने को कहिए, और यह फ़ोन इनके पास स्पीकर पर रखिए।",
+      "kn": "ದಯವಿಟ್ಟು ಅವರನ್ನು ಒಬ್ಬರನ್ನೇ ಬಿಟ್ಟು ಹೋಗಬೇಡಿ. ನೀವು ಹೋಗಲೇಬೇಕಾದರೆ, ಬೇರೆ ಯಾರಾದರೂ ಅವರ ಜೊತೆ ಇರುವಂತೆ ಹೇಳಿ, ಈ ಫೋನ್ ಅವರ ಹತ್ತಿರ ಸ್ಪೀಕರ್‌ನಲ್ಲಿ ಇಡಿ."
+    },
+    {
       "id": "HOLD",
       "group": "scene",
       "node": "E-OUT",

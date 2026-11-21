@@ -76,7 +76,8 @@ class Session:
 
     def public(self) -> dict:
         return {k: getattr(self, k) for k in ("sid", "role", "label", "lang", "voice", "status", "agent_id")} | {
-            "link": f"/j/{self.sid}" if self.role != "scene" else None}
+            "link": f"/j/{self.sid}" if self.role != "scene" else None,
+            "url": f"{C.PUBLIC_BASE_URL}/j/{self.sid}" if self.role != "scene" else None}
 
 
 @dataclass
@@ -205,10 +206,12 @@ async def say(s: Session | None, text: str, priority: str = "APPEND", interrupta
         ev("speak_failed", sid=s.sid, error=str(e)[:200])
 
 
-async def say_lines(ids: list[str], critical: bool = False) -> list[str]:
-    """Speak reviewed protocol lines word for word in the bystander's language, skipping recent repeats."""
+async def say_lines(ids: list[str], critical: bool = False, force: set | None = None) -> list[str]:
+    """Speak reviewed protocol lines word for word in the bystander's language. Automatic lines are not repeated
+    within REPEAT_GUARD_S; lines someone explicitly asked for (`force`) always play."""
     now = time.time()
-    ids = [i for i in ids if critical or now - INC.spoken.get(i, 0) > REPEAT_GUARD_S]
+    force = force or set()
+    ids = [i for i in ids if critical or i in force or now - INC.spoken.get(i, 0) > REPEAT_GUARD_S]
     if not ids:
         return []
     lg = P.line_lang(INC.scene_lang)
@@ -715,6 +718,7 @@ SCENE_PROMPT = """You are Saathi, the voice of an injured two-wheeler rider's ph
 - A question you cannot answer from STATUS or the protocol: call ask_ambulance.
 - Never claim anything that is not under DONE in STATUS. Never say a phone number. Never say he is fine or that it is serious.
 - Your voice is female: use feminine first-person forms in Hindi.
+- Understand what the person MEANS and respond with the next useful step, never just "okay". Examples: leaving or have to go -> say_line STAY1; scared of police -> GS1; wants to move him -> TRANS1; wants to give water -> WATER1; asks what to do -> record what they see with record_facts, or ask what they see.
 - Handle ONLY the latest user message. Earlier conversation is already handled; never re-record old facts.
 - Never invent information. Record or relay only what someone actually said.
 - Never promise to cancel, undo or not do something that is already under DONE. If the rider asks you not to call someone, say you have noted it and say truthfully what has already been done.

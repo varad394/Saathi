@@ -30,7 +30,7 @@ T = {
             "kind": {"type": "string", "enum": P.FACT_KINDS},
             "detail": {"type": "string", "description": "Short English detail, e.g. 'left leg'"}}, "required": ["kind"]}},
         "speaker": {"type": "string", "enum": ["rider", "bystander", "responder", "unknown"]}}, ["facts", "speaker"]),
-    "say_line": _fn("say_line", "Speak a reviewed line for a request: GS1 scared of police/legal trouble; HELMET1 wants to remove helmet; "
+    "say_line": _fn("say_line", "Speak a reviewed line for a request: STAY1 bystander says they are leaving / have to go / will come back; GS1 scared of police/legal trouble; HELMET1 wants to remove helmet; "
                     "WATER1 wants to give water/food/medicine; TRANS1 wants to take him in a vehicle; SAFE1 traffic danger; "
                     "SAFE3 wants to move him; CPR4 helmet during CPR; BREATH2 unsure about breathing; CONS3 ask where it hurts; "
                     "UNC2 recheck breathing; ASK112 bystander should also call 112.", {
@@ -97,6 +97,7 @@ async def run(s, name: str, args_json: str, turn: dict) -> str:
         lid = a.get("line_id")
         if lid in P.SAYABLE:
             turn["lines"].append(lid)
+            turn.setdefault("force", set()).add(lid)  # explicitly requested: always speak, even if said recently
         return json.dumps({"will_speak": lid})
     if name == "ask_ambulance":
         turn["lines"].append("HOLD")

@@ -46,7 +46,7 @@
     <div style="margin-top:10px">My mic</div><div class="lvl"><div id="miclvl" style="background:#27a"></div></div>
     <div>Saathi voice</div><div class="lvl"><div id="agentlvl"></div></div>
     <h2 style="margin-top:14px">Actions (what is actually done)</h2><ul id="actions"></ul>
-    <h2 style="margin-top:14px">Calls (open the link on another phone)</h2><ul id="sessions"></ul>
+    <h2 style="margin-top:14px">Calls: the same links the phone texts to Mom / 112 (open or copy)</h2><ul id="sessions"></ul>
   </section>
   <section>
     <h2>Rider</h2><ul id="rider"></ul>
@@ -127,7 +127,7 @@ async function refresh() {
   $('actions').innerHTML = Object.entries(inc.actions).map(([n, a]) =>
     `<li><b>${esc(n)}</b>: <span class="${['briefed','reached','sent'].includes(a.status) ? 'ok' : a.status === 'failed' ? 'bad' : 'warn'}">${esc(a.status)}</span> <span class="mute">${esc(a.t)} ${esc(a.detail)}</span></li>`).join('') || '<li class="mute">none yet</li>';
   $('sessions').innerHTML = inc.sessions.map(s => `<li><b>${esc(s.label)}</b> <span class="pill">${esc(s.status)}</span> <span class="mute">${esc(s.voice)}</span>`
-    + (s.link ? `<br><a href="${location.origin}${s.link}" target="_blank">${location.origin}${s.link}</a>` : '') + '</li>').join('');
+    + (s.url ? `<br><a href="${s.url}" target="_blank" style="font-size:15px">${s.url}</a> <button onclick="navigator.clipboard.writeText('${s.url}')">Copy</button>` : '') + '</li>').join('');
   $('rider').innerHTML = `<li>Status: <b>${esc(inc.rider.status || 'unknown')}</b></li>` + inc.rider.words.map(w => `<li>${esc(w.clock)} "${esc(w.text)}"</li>`).join('');
   $('facts').innerHTML = inc.facts.map(f => `<li>${esc(f.clock)} <b>${esc(f.kind)}</b> ${esc(f.detail)} <span class="mute">(${esc(f.speaker)})</span></li>`).join('') || '<li class="mute">none</li>';
   $('questions').innerHTML = inc.questions.map(q => `<li>${esc(q.from_label)}: ${esc(q.question)} → <b>${esc(q.answer || '…')}</b></li>`).join('') || '<li class="mute">none</li>';

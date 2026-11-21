@@ -58,7 +58,7 @@ FAMILY_FACTS = {"unresponsive", "responsive", "not_breathing", "breathing_normal
 AMBULANCE_FACTS = FAMILY_FACTS
 
 # Lines the LLM may request directly with say_line (requests and reassurance, not assessments).
-SAYABLE = ["GS1", "HELMET1", "WATER1", "TRANS1", "SAFE1", "SAFE3", "CPR4", "BREATH2", "CONS3", "UNC2", "ASK112", "HOLD"]
+SAYABLE = ["STAY1", "GS1", "HELMET1", "WATER1", "TRANS1", "SAFE1", "SAFE3", "CPR4", "BREATH2", "CONS3", "UNC2", "ASK112", "HOLD"]
 
 
 def text(line_id: str, lang: str) -> str:
