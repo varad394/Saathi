@@ -47,6 +47,7 @@ LLM_API_KEYS = list(dict.fromkeys(  # LLM_API_KEY plus LLM_API_KEY_2 ... LLM_API
 LLM_MODEL = _req("LLM_MODEL")
 LLM_FAST_MODEL = os.getenv("LLM_FAST_MODEL", "openai/gpt-oss-20b").strip()  # family/112/translation; own rate limit
 SARVAM_LLM_MODEL = os.getenv("SARVAM_LLM_MODEL", "sarvam-105b").strip()      # last-resort fallback
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()                      # optional: enables gpt-4o / gpt-4o-mini
 
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "").strip().rstrip("/")
 CUSTOM_LLM_SHARED_KEY = _req("CUSTOM_LLM_SHARED_KEY")

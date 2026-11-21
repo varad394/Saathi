@@ -12,6 +12,7 @@ from dataclasses import dataclass
 import httpx
 
 import config as C
+import settings as S
 
 log = logging.getLogger("llmclient")
 
@@ -30,21 +31,33 @@ def _groq(tag: str, model: str) -> list[Provider]:
     return [Provider(f"groq-{tag}-{i + 1}", C.LLM_BASE_URL, k, model, True, 10) for i, k in enumerate(C.LLM_API_KEYS)]
 
 
-MAIN, FAST = _groq("main", C.LLM_MODEL), _groq("fast", C.LLM_FAST_MODEL)
-SARVAM = Provider("sarvam", "https://api.sarvam.ai/v2", C.SARVAM_API_KEY, C.SARVAM_LLM_MODEL, False, 20)
-TIERS = {"scene": [MAIN, FAST], "family": [FAST, MAIN], "ambulance": [FAST, MAIN], "compose": [FAST, MAIN]}
+# Every selectable model -> its providers (several Groq keys rotate round-robin). Empty if no key is configured.
+MODELS = {
+    "groq-120b": _groq("main", C.LLM_MODEL),
+    "groq-20b": _groq("fast", C.LLM_FAST_MODEL),
+    "gpt-4o": [Provider("openai-4o", "https://api.openai.com/v1", C.OPENAI_API_KEY, "gpt-4o", False, 12)] if C.OPENAI_API_KEY else [],
+    "gpt-4o-mini": [Provider("openai-4o-mini", "https://api.openai.com/v1", C.OPENAI_API_KEY, "gpt-4o-mini", False, 12)] if C.OPENAI_API_KEY else [],
+    "sarvam-105b": [Provider("sarvam", "https://api.sarvam.ai/v2", C.SARVAM_API_KEY, C.SARVAM_LLM_MODEL, False, 20)],
+}
+FALLBACK_ORDER = ["groq-120b", "groq-20b", "gpt-4o-mini", "gpt-4o", "sarvam-105b"]
 _rr = 0
 
 
 def _chain(role: str) -> list[Provider]:
-    """Each tier's keys in round-robin order (spreads load across accounts), then Sarvam as last resort."""
+    """The model chosen in settings first (scene_llm for the scene, helper_llm for family/112/translation),
+    then every other configured model as fallback. Keys of one model rotate round-robin."""
     global _rr
     _rr += 1
+    first = S.get("scene_llm") if role == "scene" else S.get("helper_llm")
+    if not MODELS.get(first):
+        log.warning("LLM %s selected but not configured (missing key?) - using fallbacks", first)
     out = []
-    for tier in TIERS.get(role, TIERS["scene"]):
-        k = _rr % len(tier)
-        out += tier[k:] + tier[:k]
-    return out + [SARVAM]
+    for name in [first] + [m for m in FALLBACK_ORDER if m != first]:
+        tier = MODELS.get(name) or []
+        if tier:
+            k = _rr % len(tier)
+            out += tier[k:] + tier[:k]
+    return out
 
 
 _http = httpx.AsyncClient(timeout=httpx.Timeout(20, connect=5))

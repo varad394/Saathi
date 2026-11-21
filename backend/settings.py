@@ -11,7 +11,12 @@ import config as C
 
 _FILE = pathlib.Path(__file__).parent / "data" / "settings.json"
 
+LLM_CHOICES = ["groq-120b", "groq-20b", "gpt-4o", "gpt-4o-mini", "sarvam-105b"]
+
 DEFAULTS = {
+    # language models: tried first; the others remain as automatic fallbacks
+    "scene_llm": "groq-120b",              # rider / bystander conversation: groq-120b | groq-20b | gpt-4o | gpt-4o-mini | sarvam-105b
+    "helper_llm": "groq-20b",              # family / 112 calls and translations (same choices)
     # speech recognition
     "asr_vendor": C.ASR_VENDOR,            # "sarvam" (auto language) | "ares" (Agora built-in)
     "ares_langs": C.ARES_SCENE_LANGS,      # languages ARES listens for in the scene, comma-separated
@@ -66,6 +71,8 @@ def update(patch: dict) -> dict:
             lo, hi = LIMITS[k]
             v = max(lo, min(hi, v))
         if k == "asr_vendor" and v not in ("sarvam", "ares"):
+            continue
+        if k in ("scene_llm", "helper_llm") and v not in LLM_CHOICES:
             continue
         _cur[k] = v
     _FILE.parent.mkdir(exist_ok=True)
