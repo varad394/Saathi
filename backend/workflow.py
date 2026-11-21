@@ -79,9 +79,10 @@ class Session:
     joined_at: float | None = None
 
     def public(self) -> dict:
+        alias = self.contact_id if self.role == "family" else ("112" if self.role == "ambulance" else None)
         return {k: getattr(self, k) for k in ("sid", "role", "label", "lang", "voice", "status", "agent_id")} | {
-            "link": f"/j/{self.sid}" if self.role != "scene" else None,
-            "url": f"{C.PUBLIC_BASE_URL}/j/{self.sid}" if self.role != "scene" else None}
+            "link": f"/j/{alias}" if alias else None,
+            "url": f"{C.PUBLIC_BASE_URL}/j/{alias}" if alias else None}
 
 
 @dataclass
@@ -106,6 +107,7 @@ class Incident:
     last_heard: float = 0.0
     last_spoke: float = 0.0
     checkins: int = 0
+    leaving_at: float = 0.0
     lang_candidate: str | None = None
     summary: str | None = None
     tasks: list = field(default_factory=list)
@@ -140,6 +142,20 @@ class Incident:
 
 
 INC: Incident | None = None
+
+
+def resolve_sid(key: str) -> str | None:
+    """A join-link key -> session id in the CURRENT incident. Keys: a full sid, a contact id ("mom"), or "112"."""
+    if INC is None:
+        return None
+    if key in INC.sessions:
+        return key
+    for s in INC.sessions.values():
+        if (key == "112" and s.role == "ambulance") or (s.role == "family" and s.contact_id == key):
+            return s.sid
+        if key.endswith("-" + (s.contact_id or "")) and s.role == "family" or (key.endswith("-amb") and s.role == "ambulance"):
+            return s.sid  # an old link from an earlier crash: open the same person's call in the current one
+    return None
 
 
 # ---------------------------------------------------------------- helpers
@@ -443,9 +459,12 @@ async def _silence_watch() -> None:
         if inc.state != "COORDINATE" or "engaged" not in inc.flags:
             continue
         quiet = time.time() - max(inc.last_heard, inc.last_spoke)
-        if quiet < S.get('checkin_after_s'):
+        leaving = inc.leaving_at and inc.leaving_at >= inc.last_heard - 1
+        if leaving and quiet >= S.get('after_leaving_s'):
+            inc.checkins = S.get('checkins_before_announce')  # they said they're going: skip the check-ins
+        elif quiet < S.get('checkin_after_s'):
             continue
-        if inc.checkins < 2:
+        if inc.checkins < S.get('checkins_before_announce'):
             inc.checkins += 1
             lg = inc.scene_lang if inc.scene_lang in ("en", "hi", "kn") else "en"
             ev("checkin", n=inc.checkins)
@@ -453,6 +472,7 @@ async def _silence_watch() -> None:
             continue
         inc.flags.discard("engaged")
         inc.checkins = 0
+        inc.leaving_at = 0.0
         set_state("BYSTANDER", "nobody answered the check-ins")
         record_fact("other", "no one answering at the scene", "system")
         await _relay_family(f"Right now nobody is answering near {RIDER['name']}. I am calling out for help on his phone's loudspeaker.")
@@ -480,7 +500,7 @@ async def _start_family() -> None:
         INC.sessions[s.sid] = s
         ok = await start_session(s)
         # The phone (or SMS fallback) delivers the link; the number itself never reaches the LLM.
-        action(f"family:{c['id']}", "link_ready" if ok else "failed", f"{s.label}: /j/{s.sid}")
+        action(f"family:{c['id']}", "link_ready" if ok else "failed", f"{s.label}: /j/{c['id']}")
 
 
 async def _start_ambulance() -> None:
@@ -490,7 +510,7 @@ async def _start_ambulance() -> None:
                 system_prompt=AMBULANCE_PROMPT)
     INC.sessions[s.sid] = s
     ok = await start_session(s)
-    action("ambulance", "calling" if ok else "failed", f"/j/{s.sid}")
+    action("ambulance", "calling" if ok else "failed", "/j/112")
     if not ok:
         await say_lines(["ASK112"])
 

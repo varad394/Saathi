@@ -1,6 +1,7 @@
 """Tool schemas (per role and state) and the dispatcher. The state machine decides what is allowed."""
 import json
 import logging
+import time
 
 import protocol as P
 import workflow as W
@@ -101,6 +102,8 @@ async def run(s, name: str, args_json: str, turn: dict) -> str:
         return json.dumps({"recorded": [f["kind"] for f in facts], "will_speak": ids})
     if name == "say_line":
         lid = a.get("line_id")
+        if lid == "STAY1":
+            W.INC.leaving_at = time.time()  # the bystander is leaving: announce for help again sooner
         if lid in P.SAYABLE:
             turn["lines"].append(lid)
             turn.setdefault("force", set()).add(lid)  # explicitly requested: always speak, even if said recently

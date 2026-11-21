@@ -40,10 +40,12 @@ DEFAULTS = {
     "listen_after_cancel_s": 60,
     "rider_silent_s": 15,
     "announce_every_s": 35,
-    "checkin_after_s": 25,                 # silence at the scene before Saathi asks "are you still with him?"
+    "checkin_after_s": 10,                 # silence at the scene before Saathi asks "are you still with him?"
+    "checkins_before_announce": 1,         # unanswered check-ins before Saathi announces for help again
+    "after_leaving_s": 5,                  # a bystander said they are leaving: silence before announcing again
 }
 LIMITS = {"playback_gain": (0, 400), "mic_gain": (0, 400), "ains_mode": (0, 2), "speech_threshold": (0.1, 0.95), "silence_ms": (300, 2000), "rider_check_s": (5, 120), "greeting_s": (0, 30),
-          "cancel_undo_s": (3, 60), "listen_after_cancel_s": (5, 600), "rider_silent_s": (5, 120), "announce_every_s": (10, 300), "checkin_after_s": (10, 180)}
+          "cancel_undo_s": (3, 60), "listen_after_cancel_s": (5, 600), "rider_silent_s": (5, 120), "announce_every_s": (10, 300), "checkin_after_s": (3, 180), "checkins_before_announce": (0, 5), "after_leaving_s": (2, 60)}
 
 _cur = dict(DEFAULTS)
 

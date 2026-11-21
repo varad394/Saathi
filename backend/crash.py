@@ -125,11 +125,11 @@ async def stop():
 
 
 # ---------------------------------------------------------------- join links for family / 112 (F8, F1)
-def _session(sid: str):
-    s = W.INC.sessions.get(sid) if W.INC else None
-    if not s:
-        raise HTTPException(404, "This Saathi call has ended.")
-    return s
+def _session(key: str):
+    sid = W.resolve_sid(key)
+    if not sid:
+        raise HTTPException(404, "There is no active Saathi emergency right now.")
+    return W.INC.sessions[sid]
 
 
 @router.get("/api/s/{sid}")
@@ -143,6 +143,6 @@ async def session_join_info(sid: str):
 
 @router.post("/api/s/{sid}/joined")
 async def session_joined(sid: str):
-    _session(sid)
-    W.spawn(W.on_joined(sid))
+    s = _session(sid)
+    W.spawn(W.on_joined(s.sid))
     return {"ok": True}
