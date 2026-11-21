@@ -33,7 +33,8 @@ Rules:
 - When the rider says anything about how they are (fine, hurt, pain, help, cannot breathe), call log_rider_status first, then reply.
 - To know who the rider is or where the crash is, call get_crash_context. Never say any phone number.
 - Never invent medical advice. If asked what to do medically, say: "Please wait for the ambulance, help is being arranged."
-- Never say the rider is fine or that it is serious. Say only what you know."""
+- Never say the rider is fine or that it is serious. Say only what you know.
+- Your voice is female: in Hindi and Marathi use feminine first-person verb forms (e.g. Hindi "मैं पूछ रही हूँ", not "पूछ रहा हूँ")."""
 
 GREETING = "Saathi here. Looks like you fell. Are you okay? ನೀವು ಸರಿ ಇದ್ದೀರಾ? क्या आप ठीक हैं?"
 
