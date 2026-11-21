@@ -26,11 +26,26 @@ class Provider:
     timeout: float
 
 
-MAIN = Provider("groq-main", C.LLM_BASE_URL, C.LLM_API_KEY, C.LLM_MODEL, True, 10)
-FAST = Provider("groq-fast", C.LLM_BASE_URL, C.LLM_API_KEY, C.LLM_FAST_MODEL, True, 10)
+def _groq(tag: str, model: str) -> list[Provider]:
+    return [Provider(f"groq-{tag}-{i + 1}", C.LLM_BASE_URL, k, model, True, 10) for i, k in enumerate(C.LLM_API_KEYS)]
+
+
+MAIN, FAST = _groq("main", C.LLM_MODEL), _groq("fast", C.LLM_FAST_MODEL)
 SARVAM = Provider("sarvam", "https://api.sarvam.ai/v2", C.SARVAM_API_KEY, C.SARVAM_LLM_MODEL, False, 20)
-CHAINS = {"scene": [MAIN, FAST, SARVAM], "family": [FAST, MAIN, SARVAM], "ambulance": [FAST, MAIN, SARVAM],
-          "compose": [FAST, MAIN, SARVAM]}
+TIERS = {"scene": [MAIN, FAST], "family": [FAST, MAIN], "ambulance": [FAST, MAIN], "compose": [FAST, MAIN]}
+_rr = 0
+
+
+def _chain(role: str) -> list[Provider]:
+    """Each tier's keys in round-robin order (spreads load across accounts), then Sarvam as last resort."""
+    global _rr
+    _rr += 1
+    out = []
+    for tier in TIERS.get(role, TIERS["scene"]):
+        k = _rr % len(tier)
+        out += tier[k:] + tier[:k]
+    return out + [SARVAM]
+
 
 _http = httpx.AsyncClient(timeout=httpx.Timeout(20, connect=5))
 _cooldown: dict[str, float] = {}
@@ -40,7 +55,7 @@ async def complete(messages: list[dict], tools: list[dict] | None = None, role: 
                    max_tokens: int = 400) -> tuple[str, list[dict], str]:
     """Returns (text, tool_calls[{id,name,args}], provider_name)."""
     last_err = "no provider"
-    for p in CHAINS.get(role, CHAINS["scene"]):
+    for p in _chain(role):
         if time.time() < _cooldown.get(p.name, 0):
             continue
         body = {"model": p.model, "messages": messages, "max_tokens": max_tokens}

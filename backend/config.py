@@ -39,6 +39,9 @@ SARVAM_API_KEY = _req("SARVAM_API_KEY")
 
 LLM_BASE_URL = _req("LLM_BASE_URL").rstrip("/")
 LLM_API_KEY = _req("LLM_API_KEY")
+# Optional extra keys from OTHER Groq accounts (limits are per organisation; same-account keys share them)
+LLM_API_KEYS = list(dict.fromkeys(  # LLM_API_KEY plus LLM_API_KEY_2 ... LLM_API_KEY_9, duplicates removed
+    k for k in [LLM_API_KEY] + [os.getenv(f"LLM_API_KEY_{i}", "").strip() for i in range(2, 10)] if k))
 LLM_MODEL = _req("LLM_MODEL")
 LLM_FAST_MODEL = os.getenv("LLM_FAST_MODEL", "openai/gpt-oss-20b").strip()  # family/112/translation; own rate limit
 SARVAM_LLM_MODEL = os.getenv("SARVAM_LLM_MODEL", "sarvam-105b").strip()      # last-resort fallback

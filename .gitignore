@@ -20,3 +20,7 @@ android/app/build/
 android/local.properties
 *.apk
 .idea/
+
+# Local key notes
+api.txt
+*.key
