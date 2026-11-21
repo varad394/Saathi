@@ -24,6 +24,17 @@ MURF_API_KEY = _req("MURF_API_KEY")
 MURF_VOICE_ID = _req("MURF_VOICE_ID")
 MURF_MODEL = os.getenv("MURF_MODEL", "falcon-2.1").strip()
 
+# Family / 112 / hospital sessions use Murf's recommended (female) voice for that party's language.
+# Source: Murf 'Recommended Indian voices' sheet linked in the hackathon FAQ. All verified in Murf's
+# falcon-2.1 voice list to support the locale shown.
+VOICE_BY_LANG = {
+    "en": ("en-IN-pooja", "en-IN"), "hi": ("en-IN-pooja", "hi-IN"), "kn": ("en-IN-pooja", "kn-IN"),
+    "ta": ("en-IN-pooja", "ta-IN"), "te": ("en-IN-pooja", "te-IN"),
+    "mr": ("gu-IN-diya", "mr-IN"), "gu": ("gu-IN-diya", "gu-IN"), "ml": ("gu-IN-diya", "ml-IN"),
+    "bn": ("bn-IN-debarati", "bn-IN"), "pa": ("pa-IN-harpreet", "pa-IN"),
+    "as": ("en-IN-anisha", "as-IN"), "or": ("en-IN-anisha", "or-IN"),
+}
+
 SARVAM_API_KEY = _req("SARVAM_API_KEY")
 
 LLM_BASE_URL = _req("LLM_BASE_URL").rstrip("/")

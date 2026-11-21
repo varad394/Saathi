@@ -100,7 +100,7 @@ Log timestamps at tap, join 200, and first audio frame (`onFirstRemoteAudioFrame
 
 ## 6. Unverified assumptions (check during step 1, 2 or 4)
 
-- **A1 (RESOLVED)** Murf model string is `falcon-2.1`: Murf's voices API says it accepts only `gen2` and `falcon-2.1`. Voice: started with `en-IN-nikhil` (en-IN, hi-IN, kn-IN); switched to `hi-IN-poonam` (12 Indian locales incl. mr, bn) — see scenario_tree.md section 1.6.
+- **A1 (RESOLVED)** Murf model string is `falcon-2.1`: Murf's voices API says it accepts only `gen2` and `falcon-2.1`. Voice: started with `en-IN-nikhil` (en-IN, hi-IN, kn-IN); now `en-IN-pooja` per Murf's recommended-voices sheet, with per-language family voices — see scenario_tree.md section 1.6.
 - **A2** A single Falcon voice speaks kn-IN when `locale` is set to `en-IN` and the text is in Kannada script. Since `locale` can't be changed through `update`, if this fails we need a per-language voice (one agent per language) or a different approach. **This is the top risk to test in step 4.**
 - **A3** Sarvam `language: "unknown"` handles code-mixed input. The top-level `asr.language` versus `params.language` behaviour is undocumented. Agora doesn't return the detected language, so the LLM infers the reply language from the transcript text.
 - **A4** Which Sarvam model Agora uses by default (and whether `params.model` passes through) is undocumented.

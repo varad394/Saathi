@@ -6,7 +6,7 @@
 > - **clinical review:** OPEN (prototype) - drafted from the guidelines listed below; to be signed off by a doctor or certified first-aid trainer before launch
 > - **hi review:** OPEN (prototype) - native-speaker check before launch
 > - **kn review:** OPEN (prototype) - native-speaker check before launch (the team does not read Kannada; the English line is the meaning)
-> - **speaker gender:** female - voice hi-IN-poonam, so Hindi first-person verbs use feminine forms (rahi hoon / sakti). Change them if a male voice is chosen.
+> - **speaker gender:** female - all voices are female (scene en-IN-pooja; family voices from Murf's recommended list), so Hindi first-person verbs use feminine forms (rahi hoon / sakti)
 
 Every line below is spoken through Agora's `speak` API exactly as written. The LLM only chooses *which* line (by ID); it never writes medical text. The English line is the source, and the Hindi and Kannada lines say the same thing. Node IDs (E0, E4a, …) refer to the tree in [scenario_tree.md](scenario_tree.md).
 

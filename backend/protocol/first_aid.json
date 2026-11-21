@@ -4,7 +4,7 @@
     "clinical_review": "OPEN (prototype) - drafted from the guidelines listed below; to be signed off by a doctor or certified first-aid trainer before launch",
     "hi_review": "OPEN (prototype) - native-speaker check before launch",
     "kn_review": "OPEN (prototype) - native-speaker check before launch (the team does not read Kannada; the English line is the meaning)",
-    "speaker_gender": "female - voice hi-IN-poonam, so Hindi first-person verbs use feminine forms (rahi hoon / sakti). Change them if a male voice is chosen."
+    "speaker_gender": "female - all voices are female (scene en-IN-pooja; family voices from Murf's recommended list), so Hindi first-person verbs use feminine forms (rahi hoon / sakti)"
   },
   "principles": [
     "One action per sentence. Short, plain words. A frightened stranger must be able to follow it while holding a wound.",

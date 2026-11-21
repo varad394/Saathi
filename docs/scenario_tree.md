@@ -70,10 +70,10 @@ Every logged utterance carries `speaker = rider | bystander | responder | unknow
 
 ### 1.6 Voice and language coverage
 - **Agora can't change the TTS locale during a session.** This is fine, because each party has its own session.
-- **The first voice we tested couldn't cover Marathi.** `en-IN-nikhil` only covers en, hi and kn. Murf's Falcon voice list shows:
-  - `en-IN-samar` (male): as, en, hi, kn, mr, or, ta, te
-  - `hi-IN-poonam` (female): as, bn, en, gu, hi, kn, ml, mr, or, pa, ta, te
-- **Decision: `hi-IN-poonam`** for every session. It's the only one of the two that also covers **Bengali**, which the brief names as a likely family language, and it keeps the "one voice" rule. It's a female voice, so Hindi and Marathi first-person verbs use feminine forms ("पूछ रही हूँ").
+- **Voices follow Murf's own "Recommended Indian voices" sheet** (linked from the hackathon FAQ). All are female, so the persona stays consistent and the Hindi first-person grammar ("पूछ रही हूँ") stays correct.
+  - **Scene session** (rider and bystanders, languages switch live): **`en-IN-pooja`**. This is Murf's #1 pick for multilingual output, and their recommended female voice for Kannada, Hindi, Hinglish, Tamil and Telugu. Falcon locales: en, hi, kn, ta, te.
+  - **Family, 112 and hospital sessions** are separate calls with separate listeners, so each uses the recommended voice for *its* language (`VOICE_BY_LANG` in `backend/config.py`): Marathi, Gujarati and Malayalam → `gu-IN-diya`; Bengali → `bn-IN-debarati`; Punjabi → `pa-IN-harpreet`; Assamese and Odia → `en-IN-anisha`; everything else → `en-IN-pooja`.
+  - *History:* we started with `en-IN-nikhil` (en, hi, kn only), then briefly `hi-IN-poonam`, which isn't on Murf's recommended list.
 - Sarvam's speech recognition supports 22 Indian languages, including Marathi.
 
 ### 1.7 No data and other failures
@@ -397,7 +397,7 @@ Rules for the relay:
 
    The state machine decides which tools each state allows.
 3. **Multi-session manager:** scene, family, 112 and hospital sessions, each with its own channel, language and prompt, plus relay through `update` and `think`.
-4. **Voice switch to `hi-IN-poonam`:** done in `.env` (Marathi, Tamil, Telugu, Bengali and more now have a voice).
+4. **Voices from Murf's recommended list:** `en-IN-pooja` for the scene (in `.env`), and `VOICE_BY_LANG` in `backend/config.py` for family and 112 sessions.
 5. **Join-link web page** for family and 112. The browser test page we already have works as a starting point.
 6. **SMS fallback** on the phone, and the **I'm OK** button.
 7. **Offline clip pack:** a script that renders every line in `first_aid.json` to Murf audio for the chosen languages, the phone downloads them, and the offline loop plays them with the emergency screen card (section 10).
@@ -406,7 +406,7 @@ Rules for the relay:
 ## 8. Assumptions to verify
 - The payload of Agora's `think` endpoint (only its name and purpose are confirmed). If it doesn't work, use `update` plus a templated `speak`.
 - Whether Agora SAL's "recognition" mode can label speakers.
-- How well `hi-IN-poonam` sounds in Kannada and Marathi with the fixed `en-IN` locale (listen in the next live test).
+- How `en-IN-pooja` sounds in Kannada with the fixed `en-IN` locale, and `gu-IN-diya` in Marathi (listen in the next live test).
 - How many ConvoAI agents our project can run at once.
 - Groq's limits with three simultaneous sessions.
 - 112 India SMS support; call screening and auto-decline on ColorOS.
@@ -459,15 +459,16 @@ A Bengaluru commuter who crashes in Pune gets Marathi announcements, while his r
 
 **Current coverage**
 
-| Language | Sarvam ASR | Murf voice `hi-IN-poonam` (chosen) | Reviewed lines | Status today |
+| Language | Sarvam ASR | Murf voice (recommended, female) | Reviewed lines | Status today |
 |---|---|---|---|---|
-| English | yes | yes | draft | available |
-| Hindi | yes | yes | draft | available |
-| Kannada | yes | yes | draft, native-speaker check open | available |
-| Marathi | yes | yes | not written | conversation works; first-aid lines to translate |
-| Tamil, Telugu | yes | yes | not written | conversation works; first-aid lines to translate |
-| Bengali, Gujarati, Malayalam, Punjabi | yes | yes | not written | conversation works; first-aid lines to translate |
-| Urdu | yes `[check Sarvam list]` | no | — | Hindi fallback |
+| English | yes | `en-IN-pooja` | draft | available |
+| Hindi | yes | `en-IN-pooja` | draft | available |
+| Kannada | yes | `en-IN-pooja` | draft, native-speaker check open | available |
+| Tamil, Telugu | yes | `en-IN-pooja` | not written | conversation works; first-aid lines to translate |
+| Marathi | yes | `gu-IN-diya` (family session) | not written | conversation works; first-aid lines to translate |
+| Bengali | yes | `bn-IN-debarati` (family session) | not written | conversation works; first-aid lines to translate |
+| Gujarati, Malayalam, Punjabi | yes | `gu-IN-diya` / `pa-IN-harpreet` | not written | conversation works; first-aid lines to translate |
+| Urdu | yes `[check Sarvam list]` | none | — | Hindi fallback |
 
 ---
 
