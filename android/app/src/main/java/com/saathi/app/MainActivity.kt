@@ -79,6 +79,8 @@ class MainActivity : Activity(), SensorEventListener, CrashDetector.Listener {
     private lateinit var emergency: LinearLayout
     private lateinit var countdown: TextView
     private lateinit var doneView: TextView
+    private lateinit var transcriptView: TextView
+    @Volatile private var serverSettings = JSONObject()
     private lateinit var liveView: TextView
     private lateinit var thrLabel: TextView
     private lateinit var graph: SensorGraphView
@@ -95,6 +97,11 @@ class MainActivity : Activity(), SensorEventListener, CrashDetector.Listener {
         val need = arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.SEND_SMS)
             .filter { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }
         if (need.isNotEmpty()) requestPermissions(need.toTypedArray(), 1) else startLocation()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        io.execute { try { serverSettings = Net.get(this, "/settings") } catch (_: Exception) {} }  // e.g. noise suppression
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) = startLocation()
@@ -131,6 +138,9 @@ class MainActivity : Activity(), SensorEventListener, CrashDetector.Listener {
         emergency.addView(big)
         doneView = TextView(this).apply { textSize = 14f; setPadding(0, pad / 2, 0, pad / 2) }
         emergency.addView(doneView)
+        emergency.addView(TextView(this).apply { text = "Conversation"; textSize = 13f; setTypeface(null, Typeface.BOLD) })
+        transcriptView = TextView(this).apply { textSize = 15f; setPadding(0, 0, 0, pad / 2) }
+        emergency.addView(transcriptView)
         val row3 = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
         row3.addView(Button(this).apply { text = "Call 112"; setOnClickListener { startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:112"))) } },
             LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
@@ -347,6 +357,12 @@ class MainActivity : Activity(), SensorEventListener, CrashDetector.Listener {
             done.append("$mark ${pretty(k)}: $st\n")
         }
         maybeSendLinks(inc)
+        val tr = inc.optJSONArray("transcript")
+        val convo = StringBuilder()
+        if (tr != null) for (i in maxOf(0, tr.length() - 8) until tr.length()) {
+            val e = tr.getJSONObject(i)
+            convo.append(if (e.optString("who") == "saathi") "Saathi: " else "You: ").append(e.optString("text").trim()).append("\n")
+        }
         runOnUiThread {
             emergency.visibility = if (state in setOf("CLOSED", "CANCELLED")) View.GONE else View.VISIBLE
             stateView.setBackgroundColor(when (state) {
@@ -362,6 +378,7 @@ class MainActivity : Activity(), SensorEventListener, CrashDetector.Listener {
                 else -> ""
             }
             doneView.text = if (done.isEmpty()) "Nothing sent yet" else done.toString().trim()
+            transcriptView.text = if (convo.isEmpty()) "(listening…)" else convo.toString().trim()
         }
         if (state == "CLOSED" || state == "CANCELLED") pollTask?.cancel(false)
     }
@@ -453,6 +470,11 @@ class MainActivity : Activity(), SensorEventListener, CrashDetector.Listener {
         val e = engine!!
         e.enableAudio()
         e.setDefaultAudioRoutetoSpeakerphone(true)
+        // AI noise suppression for loud roads / venues (settings: mic_ans on/off, ains_mode 0/1/2)
+        val ains = serverSettings.optBoolean("mic_ans", true)
+        val mode = serverSettings.optInt("ains_mode", 1)
+        val rc0 = e.setAINSMode(ains, mode)
+        log("AI noise suppression ${if (ains) "on, mode $mode" else "off"} (rc=$rc0)")
         val rc = e.joinChannel(token, channel, uid, ChannelMediaOptions().apply {
             clientRoleType = Constants.CLIENT_ROLE_BROADCASTER
             channelProfile = Constants.CHANNEL_PROFILE_COMMUNICATION

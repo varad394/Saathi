@@ -104,6 +104,8 @@ async def chat_completions(sid: str, req: Request):
         if not out or out.lstrip().startswith(("{", "[")):  # a model echoing a tool result: never speak JSON
             out = (FAMILY_WAIT.get(s.lang, FAMILY_WAIT["en"]) if s.role == "family"
                    else FALLBACK_BY_ROLE.get(s.role, FALLBACK))
+    if out:
+        W.ev("said", sid=s.sid, text=out)  # shown in the live transcript (phone + dashboard)
     if lines:
         W.spawn(W.say_lines(list(dict.fromkeys(lines)), critical=turn["critical"]))
     log.info("TURN [%s] via %s heard=%r -> %s (%.0f ms)", s.role, provider, last_user,

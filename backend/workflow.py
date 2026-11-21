@@ -118,6 +118,9 @@ class Incident:
             "rider": self.rider, "facts": self.facts, "actions": self.actions, "questions": self.questions,
             "destination": self.destination, "eta_min": self.eta_min, "flags": sorted(self.flags),
             "sessions": [s.public() for s in self.sessions.values()], "timeline": self.timeline[-80:],
+            "transcript": [{"who": "them" if e["kind"] == "heard" else "saathi", "text": e["text"], "clock": e["clock"]}
+                           for e in self.timeline if e["kind"] in ("heard", "spoke", "said")
+                           and e.get("sid", "").endswith("-scene") and e.get("text", "").strip()][-14:],
             "summary": self.summary,
         }
 
@@ -678,6 +681,7 @@ SCENE_PROMPT = """You are Saathi, the voice of an injured two-wheeler rider's ph
 - Your voice is female: use feminine first-person forms in Hindi.
 - Handle ONLY the latest user message. Earlier conversation is already handled; never re-record old facts.
 - Never invent information. Record or relay only what someone actually said.
+- Never promise to cancel, undo or not do something that is already under DONE. If the rider asks you not to call someone, say you have noted it and say truthfully what has already been done.
 - Follow INSTRUCTIONS NOW in the STATUS message every turn."""
 
 SCENE_STATE_HINTS = {

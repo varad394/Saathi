@@ -16,12 +16,13 @@ DEFAULTS = {
     "asr_vendor": C.ASR_VENDOR,            # "sarvam" (auto language) | "ares" (Agora built-in)
     "ares_langs": C.ARES_SCENE_LANGS,      # languages ARES listens for in the scene, comma-separated
     # Agora voice activity detection (turn_detection.config)
-    "speech_threshold": 0.6,               # 0..1; higher ignores quieter / distant voices (background chatter)
-    "silence_ms": 700,                     # silence that ends a turn
+    "speech_threshold": 0.7,               # 0..1; higher ignores quieter / distant voices (background chatter)
+    "silence_ms": 900,                     # silence that ends a turn (longer = fewer split sentences)
     # phone / dashboard microphone processing (applied by the client when it opens the mic)
     "mic_aec": False,                      # echo cancellation: on for loudspeaker, off for headsets
     "mic_ans": True,                       # noise suppression: keep on in noisy places
     "mic_agc": True,                       # automatic gain
+    "ains_mode": 1,                        # phone AI noise suppression: 0 balanced, 1 aggressive, 2 aggressive + low latency
     # workflow timers (seconds)
     "rider_check_s": 20,
     "greeting_s": 9,
@@ -30,7 +31,7 @@ DEFAULTS = {
     "rider_silent_s": 15,
     "announce_every_s": 35,
 }
-LIMITS = {"speech_threshold": (0.1, 0.95), "silence_ms": (300, 2000), "rider_check_s": (5, 120), "greeting_s": (0, 30),
+LIMITS = {"ains_mode": (0, 2), "speech_threshold": (0.1, 0.95), "silence_ms": (300, 2000), "rider_check_s": (5, 120), "greeting_s": (0, 30),
           "cancel_undo_s": (3, 60), "listen_after_cancel_s": (5, 600), "rider_silent_s": (5, 120), "announce_every_s": (10, 300)}
 
 _cur = dict(DEFAULTS)
