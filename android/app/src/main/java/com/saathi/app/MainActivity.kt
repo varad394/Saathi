@@ -438,7 +438,14 @@ class MainActivity : Activity(), SensorEventListener, CrashDetector.Listener {
             transcriptView.text = if (convoHtml.isEmpty()) Html.fromHtml("<i>Listening…</i>", Html.FROM_HTML_MODE_LEGACY)
                                   else Html.fromHtml(convoHtml.toString(), Html.FROM_HTML_MODE_LEGACY)
         }
-        if (state == "CLOSED" || state == "CANCELLED") pollTask?.cancel(false)
+        // CLOSED: the call is over. CANCELLED: Saathi keeps listening ~60 s for "help", so stay in the call and keep
+        // polling (a "help" re-opens the alert); the next crash leaves this channel before joining its own.
+        if (state == "CLOSED") {
+            pollTask?.cancel(false)
+            engine?.leaveChannel()
+            synchronized(lock) { inCall = false }
+            log("incident closed: left the call")
+        }
     }
 
     private fun pretty(k: String) = when {
@@ -526,6 +533,7 @@ class MainActivity : Activity(), SensorEventListener, CrashDetector.Listener {
             })
         }
         val e = engine!!
+        e.leaveChannel()  // a previous crash's channel would make this join fail with -17 (already in a channel)
         e.enableAudio()
         e.setDefaultAudioRoutetoSpeakerphone(true)
         // AI noise suppression for loud roads / venues (settings: mic_ans on/off, ains_mode 0/1/2)
@@ -542,7 +550,7 @@ class MainActivity : Activity(), SensorEventListener, CrashDetector.Listener {
             publishMicrophoneTrack = true
             autoSubscribeAudio = true
         })
-        log("joinChannel rc=$rc")
+        log(if (rc == 0) "joining channel $channel" else "joinChannel FAILED rc=$rc (${RtcEngine.getErrorDescription(-rc)})")
     }
 
     private fun stop() = io.execute {
