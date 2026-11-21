@@ -47,8 +47,9 @@ RIDER_LINES = {
     "still_here": {"en": "Okay. Help is still on the way; the ambulance team will check you.",
                    "hi": "ठीक है। मदद आ रही है, एम्बुलेंस टीम आपको देखेगी।"},
 }
-GREETING_SCENE = ("मैं साथी हूँ। लगता है आप गिर गए हैं। क्या आप ठीक हैं? ठीक हैं तो बोलिए, वरना बीस सेकंड में मैं आपके परिवार और एम्बुलेंस को बुला लूँगी। "
-                  "Saathi here. Looks like you fell. Are you okay? Unless you say you are fine, I will call your family and an ambulance in 20 seconds.")
+GREETING_SCENE = ("साथी बोल रही हूँ। आप ठीक हैं? ठीक नहीं बोला, तो मैं मदद बुला लूँगी। "
+                  "Saathi here. Are you okay? Say I'm fine, or I'll call your family and an ambulance.")
+GREETING_S = 9  # roughly how long the greeting takes to speak; the 20 s answer window starts after it
 
 
 @dataclass
@@ -317,7 +318,7 @@ async def on_impact(peak_g: float, lat: float | None = None, lon: float | None =
                     system_prompt=SCENE_PROMPT, greeting=GREETING_SCENE)
     INC.sessions[scene.sid] = scene
     await start_session(scene)
-    return {"incident": INC.id, "agent_id": scene.agent_id, "status": scene.status, "app_id": C.AGORA_APP_ID,
+    return {"incident": INC.id, "sid": scene.sid, "agent_id": scene.agent_id, "status": scene.status, "app_id": C.AGORA_APP_ID,
             "channel": scene.channel, "uid": scene.user_uid, "token": agora.rtc_token(scene.channel, scene.user_uid)}
 
 
@@ -326,8 +327,7 @@ async def on_confirmed(peak_g: float, angle_deg: float, still_std_g: float) -> N
         return
     INC.peak_g = max(INC.peak_g, peak_g)
     set_state("DETECTED", f"still and tilted {angle_deg:.0f} deg")
-    set_state("RIDER_CHECK", f"{RIDER_CHECK_S} s to answer")
-    INC.rider_check_deadline = time.time() + RIDER_CHECK_S
+    set_state("RIDER_CHECK", f"{RIDER_CHECK_S} s to answer after the greeting")
     spawn(_rider_check_timer())
 
 
@@ -339,8 +339,16 @@ async def on_detector_cancel(reason: str) -> None:
 
 
 async def _rider_check_timer() -> None:
+    """The rider gets RIDER_CHECK_S seconds AFTER the greeting. The greeting plays when the phone joins the channel,
+    so wait for the join report (dashboard / app call /api/s/{sid}/joined); fall back after 15 s if none arrives."""
     inc = INC
-    await asyncio.sleep(RIDER_CHECK_S)
+    waited = 0.0
+    while inc.scene().status != "joined" and waited < 15 and INC is inc:
+        await asyncio.sleep(0.25)
+        waited += 0.25
+    inc.rider_check_deadline = time.time() + GREETING_S + RIDER_CHECK_S
+    ev("rider_check_window", seconds=GREETING_S + RIDER_CHECK_S, phone_joined=inc.scene().status == "joined")
+    await asyncio.sleep(GREETING_S + RIDER_CHECK_S)
     if INC is inc and inc.state == "RIDER_CHECK":
         await escalate("no answer from the rider in 20 s", rider_talking=False)
 
@@ -430,6 +438,8 @@ async def on_joined(sid: str) -> None:
         return
     s.status, s.joined_at = "joined", time.time()
     ev("joined", sid=sid, role=s.role)
+    if s.role == "scene":
+        return
     if s.role == "family":
         contact = next(c for c in PROFILE["contacts"] if c["id"] == s.contact_id)
         await say_composed(s, family_brief_en(contact), audience=f"the rider's {contact['relation']}")

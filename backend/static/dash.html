@@ -34,6 +34,7 @@
   <button id="close">Close incident</button>
   <button id="stopAll">Stop all agents</button>
   <span>Mic: <select id="micsel"></select></span>
+  <span id="rtc" style="font-size:13px;color:#ffd54f">not connected</span>
 </header>
 <main>
   <section>
@@ -69,19 +70,26 @@ async function post(path) {
   return j;
 }
 
+const rtc = (msg, bad) => { $('rtc').textContent = msg; $('rtc').style.color = bad ? '#ff8a80' : '#b9f6ca'; };
 async function joinAsPhone(info) {
   if (client) await leave();
+  rtc('joining channel…');
   client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+  client.on('connection-state-change', (cur) => rtc('connection: ' + cur, cur === 'DISCONNECTED'));
+  client.on('user-joined', u => rtc(`Saathi agent (uid ${u.uid}) is in the channel`));
   client.on('user-published', async (user, type) => {
     if (type !== 'audio') return;
     await client.subscribe(user, 'audio');
     user.audioTrack.play();
+    rtc('connected: hearing Saathi');
     setInterval(() => { if (user.audioTrack) $('agentlvl').style.width = (user.audioTrack.getVolumeLevel() * 100) + '%'; }, 80);
   });
   await client.join(info.app_id, info.channel, info.token, info.uid);
   mic = await AgoraRTC.createMicrophoneAudioTrack({ AEC: true, ANS: true, AGC: true, microphoneId: $('micsel').value || undefined });
   setInterval(() => { if (mic) $('miclvl').style.width = (mic.getVolumeLevel() * 100) + '%'; }, 80);
   await client.publish([mic]);
+  rtc(`joined; mic: ${mic.getTrackLabel()}`);
+  if (info.sid) await fetch(`/api/s/${info.sid}/joined`, { method: 'POST' });  // starts the rider-check window
 }
 
 async function leave() {
@@ -89,10 +97,10 @@ async function leave() {
   if (client) { await client.leave(); client = null; }
 }
 
-$('sim').onclick = async () => { try { const s = await post('/crash/simulate'); await joinAsPhone(s); } catch (e) { alert(e.message); } };
+$('sim').onclick = async () => { try { const s = await post('/crash/simulate'); await joinAsPhone(s); } catch (e) { rtc('ERROR: ' + e.message, true); alert(e.message); } };
 $('joinScene').onclick = async () => {
   try { const inc = await (await fetch('/incident')).json(); const sc = (inc.sessions || []).find(s => s.role === 'scene');
-        if (!sc) return alert('No incident yet'); await joinAsPhone(await (await fetch('/api/s/' + sc.sid)).json()); }
+        if (!sc) return alert('No incident yet'); await joinAsPhone({ ...(await (await fetch('/api/s/' + sc.sid)).json()), sid: sc.sid }); }
   catch (e) { alert(e.message); } };
 $('leave').onclick = leave;
 $('close').onclick = () => post('/incident/close').catch(e => alert(e.message));
