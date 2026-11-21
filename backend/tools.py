@@ -35,8 +35,14 @@ T = {
                     "SAFE3 wants to move him; CPR4 helmet during CPR; BREATH2 unsure about breathing; CONS3 ask where it hurts; "
                     "UNC2 recheck breathing; ASK112 bystander should also call 112.", {
         "line_id": {"type": "string", "enum": P.SAYABLE}}, ["line_id"]),
-    "ask_ambulance": _fn("ask_ambulance", "A question outside the first-aid protocol: say a holding line and ask the 112 team.", {
-        "question": {"type": "string", "description": "The question, in English"}}, ["question"]),
+    "ask_ambulance": _fn("ask_ambulance", "A question or situation NOT covered by any reviewed line (record_facts / say_line). "
+                         "Give a short, safe answer now and also pass the question to the 112 team.", {
+        "question": {"type": "string", "description": "The question, in English"},
+        "advice": {"type": "string", "description": "1-2 short sentences of conservative, widely accepted LAY first aid that "
+                   "answers it, in the reply language. Allowed: keep him still, keep the airway clear, press on bleeding, keep him "
+                   "warm, reassure him, nothing to eat or drink, don't move him unless in danger, wait for the ambulance. Never: "
+                   "medicines or doses, diagnosis, procedures beyond lay first aid, removing the helmet. If unsure, leave empty."}},
+        ["question"]),
     "answer_question": _fn("answer_question", "The LATEST message answers an open question from family or 112. "
                            "Use ONLY what the person actually said; never guess.", {
         "question_id": {"type": "string"}, "answer": {"type": "string", "description": "The answer, in English"}},
@@ -100,9 +106,13 @@ async def run(s, name: str, args_json: str, turn: dict) -> str:
             turn.setdefault("force", set()).add(lid)  # explicitly requested: always speak, even if said recently
         return json.dumps({"will_speak": lid})
     if name == "ask_ambulance":
-        turn["lines"].append("HOLD")
+        spoken = await W.answer_out_of_protocol(a.get("question", ""), a.get("advice", ""))
+        if spoken:
+            turn["spoken"] = True
+        else:
+            turn["lines"].append("HOLD")
         await W.ask_ambulance(a.get("question", ""))
-        return json.dumps({"asked_112": True})
+        return json.dumps({"asked_112": True, "advice_spoken": spoken})
     if name == "answer_question":
         return json.dumps(await W.answer_question(a.get("question_id", ""), a.get("answer", "")))
     if name == "set_destination":

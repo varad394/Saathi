@@ -18,6 +18,7 @@ import compose
 import config as C
 import lang as L
 import protocol as P
+import advice_guard
 import settings as S
 
 log = logging.getLogger("workflow")
@@ -578,7 +579,10 @@ def record_fact(kind: str, detail: str = "", speaker: str = "unknown") -> list[s
         for a in INC.by_role("ambulance"):
             if a.status == "joined":
                 spawn(say(a, f"Update: {kind.replace('_', ' ')}{(', ' + detail) if detail else ''}."))
-    return P.lines_for_fact(kind, INC.facts)
+    ids = P.lines_for_fact(kind, INC.facts)
+    if speaker != "rider":  # a bystander reporting his symptom: guidance for the bystander, not "you stay still"
+        ids = ["CONS2" if i == "RIDER_STILL" else i for i in ids]
+    return ids
 
 
 async def _relay_family(text_en: str) -> None:
@@ -614,6 +618,20 @@ async def answer_question(qid: str, answer_en: str) -> dict:
     if "hospital" in q["question"].lower() and not INC.destination:  # deterministic backup for set_destination
         await set_destination(answer_en, by="scene", tell_family=False)  # family just heard the answer
     return {"answered": True}
+
+
+async def answer_out_of_protocol(question_en: str, advice: str) -> bool:
+    """No reviewed line covers this: speak short, conservative lay first aid if allowed and it passes the safety
+    filter. Logged as generated_advice for review. Returns False -> caller speaks the reviewed HOLD line."""
+    if not S.get("allow_general_advice"):
+        return False
+    ok, why = advice_guard.check(advice)
+    ev("generated_advice", question=question_en, advice=advice, allowed=ok, reason=why)
+    if not ok:
+        return False
+    await say(INC.scene(), advice + " " + {"hi": "मैंने एम्बुलेंस टीम से भी पूछा है।", "kn": "ಆಂಬ್ಯುಲೆನ್ಸ್ ತಂಡವನ್ನೂ ಕೇಳಿದ್ದೇನೆ."}
+              .get(INC.scene_lang, "I have also asked the ambulance team."))
+    return True
 
 
 async def ask_ambulance(question_en: str) -> None:
@@ -714,8 +732,8 @@ def status_for(s: Session) -> str:
 
 SCENE_PROMPT = """You are Saathi, the voice of an injured two-wheeler rider's phone, on loudspeaker at a crash scene. You talk to the rider and to bystanders.
 - Every spoken reply is ONE short sentence (max 20 words) in the reply language given in STATUS, in its native script.
-- You NEVER give medical or first-aid advice in your own words. When someone reports what they see, call record_fact; the system then speaks reviewed instructions word for word. For requests (remove helmet, give water, move him, scared of police, should I call 112) call say_line with the matching line.
-- A question you cannot answer from STATUS or the protocol: call ask_ambulance.
+- Reviewed lines come first. When someone reports what they see, call record_facts; the system speaks reviewed instructions word for word. For requests (remove helmet, give water, move him, scared of police, leaving, should I call 112) call say_line with the matching line.
+- ONLY if no reviewed line fits, call ask_ambulance with the question AND a short, safe, helpful answer in `advice` (conservative lay first aid; never medicines, doses, diagnosis or removing the helmet). Always help; never leave the person without a useful next step.
 - Never claim anything that is not under DONE in STATUS. Never say a phone number. Never say he is fine or that it is serious.
 - Your voice is female: use feminine first-person forms in Hindi.
 - Understand what the person MEANS and respond with the next useful step, never just "okay". Examples: leaving or have to go -> say_line STAY1; scared of police -> GS1; wants to move him -> TRANS1; wants to give water -> WATER1; asks what to do -> record what they see with record_facts, or ask what they see.

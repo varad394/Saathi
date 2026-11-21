@@ -17,6 +17,9 @@ DEFAULTS = {
     # language models: tried first; the others remain as automatic fallbacks
     "scene_llm": "groq-120b",              # rider / bystander conversation: groq-120b | groq-20b | gpt-4o | gpt-4o-mini | sarvam-105b
     "helper_llm": "groq-20b",              # family / 112 calls and translations (same choices)
+    # When no reviewed protocol line covers a question, may the LLM give short, conservative lay first aid?
+    # (checked by advice_guard; the question also goes to the 112 operator). Off = strict protocol-only mode.
+    "allow_general_advice": True,
     # speech recognition
     "asr_vendor": C.ASR_VENDOR,            # "sarvam" (auto language) | "ares" (Agora built-in)
     "ares_langs": C.ARES_SCENE_LANGS,      # languages ARES listens for in the scene, comma-separated
