@@ -53,6 +53,28 @@ async def cancel(body: CancelIn):
     return {"ok": True}
 
 
+@router.post("/crash/rider_ok")
+async def rider_ok():
+    """The big I'M OK button on the phone (C2): same as the rider saying he is fine."""
+    if not W.INC:
+        raise HTTPException(409, "no incident")
+    r = W.rider_status("ok", "(tapped I'M OK on the phone)")
+    if r.get("_say"):
+        W.spawn(W.say(W.INC.scene(), r["_say"], priority="INTERRUPT"))
+    return {"state": W.INC.state}
+
+
+@router.post("/crash/rider_help")
+async def rider_help():
+    """The I NEED HELP button: escalate at once."""
+    if not W.INC:
+        raise HTTPException(409, "no incident")
+    r = W.rider_status("help", "(tapped I NEED HELP on the phone)")
+    if r.get("_say"):
+        W.spawn(W.say(W.INC.scene(), r["_say"], priority="INTERRUPT"))
+    return {"state": W.INC.state}
+
+
 @router.post("/crash/simulate")
 async def simulate(peak_g: float = 4.0, asr: str | None = None):
     if not C.PUBLIC_BASE_URL:
