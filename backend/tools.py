@@ -19,7 +19,9 @@ T = {
                    "description": "ok ONLY if the rider himself clearly says he is fine"},
         "words": {"type": "string", "description": "What he said, verbatim"}}, ["status", "words"]),
     "record_facts": _fn("record_facts", "Record EVERY new observation in the latest message about the injured rider, as one list. "
-                        "The system then speaks the reviewed first-aid instructions.", {
+                        "The system then speaks the reviewed first-aid instructions. Definitions: nausea = feels like vomiting; "
+                        "vomiting = is actually vomiting now; dizzy = dizzy/giddy/chakkar; confused = not making sense; "
+                        "pain_location = where it hurts (put the body part in detail).", {
         "facts": {"type": "array", "items": {"type": "object", "properties": {
             "kind": {"type": "string", "enum": P.FACT_KINDS},
             "detail": {"type": "string", "description": "Short English detail, e.g. 'left leg'"}}, "required": ["kind"]}},

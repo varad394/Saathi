@@ -8,6 +8,10 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Typeface
+import android.view.Gravity
+import android.text.TextUtils
+import android.text.Html
+import android.graphics.drawable.GradientDrawable
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -107,61 +111,97 @@ class MainActivity : Activity(), SensorEventListener, CrashDetector.Listener {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) = startLocation()
 
     // ---------------- UI ----------------
+    private val dp get() = resources.displayMetrics.density
+    private fun rounded(color: Int, radius: Float = 16f, stroke: Int? = null) = GradientDrawable().apply {
+        setColor(color); cornerRadius = radius * dp; if (stroke != null) setStroke((1.5f * dp).toInt(), stroke)
+    }
+    private fun card(): LinearLayout = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        val p = (14 * dp).toInt(); setPadding(p, p, p, p)
+        background = rounded(Color.WHITE)
+        elevation = 2 * dp
+    }
+    private fun cardParams() = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        .apply { bottomMargin = (12 * dp).toInt() }
+    private fun label(t: String) = TextView(this).apply {
+        text = t; textSize = 12f; setTextColor(Color.rgb(110, 110, 120)); setTypeface(null, Typeface.BOLD); letterSpacing = 0.08f
+        setPadding(0, 0, 0, (6 * dp).toInt())
+    }
+    private fun pill(t: String, bg: Int, fg: Int = Color.WHITE, size: Float = 16f, onClick: () -> Unit) = Button(this).apply {
+        text = t; textSize = size; setTextColor(fg); isAllCaps = false; setTypeface(null, Typeface.BOLD)
+        background = rounded(bg, 28f); setOnClickListener { onClick() }
+    }
+
     private fun buildUi() {
-        val d = resources.displayMetrics.density
-        val pad = (12 * d).toInt()
-        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(pad, pad, pad, pad) }
+        val pad = (14 * dp).toInt()
+        val page = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(Color.rgb(244, 245, 247)) }
 
-        val top = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        top.addView(TextView(this).apply { text = "Saathi"; textSize = 22f; setTypeface(null, Typeface.BOLD) },
-            LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
-        top.addView(Button(this).apply { text = "Settings"; setOnClickListener { startActivity(Intent(this@MainActivity, SettingsActivity::class.java)) } })
-        root.addView(top)
+        // Header
+        val header = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL; setBackgroundColor(Color.rgb(18, 18, 22)); setPadding(pad, pad, pad, pad)
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        val titles = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        titles.addView(TextView(this).apply { text = "Saathi"; textSize = 24f; setTextColor(Color.WHITE); setTypeface(null, Typeface.BOLD) })
+        titles.addView(TextView(this).apply { text = "Crash responder · speaks your language"; textSize = 12f; setTextColor(Color.rgb(180, 180, 190)) })
+        header.addView(titles, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        header.addView(pill("Settings", Color.rgb(55, 55, 65), size = 14f) { startActivity(Intent(this, SettingsActivity::class.java)) })
+        page.addView(header)
 
-        stateView = TextView(this).apply { textSize = 20f; setTypeface(null, Typeface.BOLD); setPadding(pad, pad / 2, pad, pad / 2) }
-        root.addView(stateView)
+        val body = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(pad, pad, pad, pad) }
 
-        // Emergency panel (visible during an incident)
-        emergency = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; visibility = View.GONE }
-        countdown = TextView(this).apply { textSize = 17f; setTextColor(Color.rgb(180, 60, 0)) }
+        // Status card
+        stateView = TextView(this).apply {
+            textSize = 20f; setTypeface(null, Typeface.BOLD); setTextColor(Color.WHITE)
+            val p = (16 * dp).toInt(); setPadding(p, p, p, p)
+        }
+        body.addView(stateView, cardParams())
+
+        // Emergency card (visible during an incident)
+        emergency = card().apply { visibility = View.GONE }
+        countdown = TextView(this).apply { textSize = 18f; setTextColor(Color.rgb(200, 90, 0)); setTypeface(null, Typeface.BOLD) }
         emergency.addView(countdown)
-        val big = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        val h = (64 * d).toInt()
-        big.addView(Button(this).apply {
-            text = "I'M OK"; textSize = 20f; setBackgroundColor(Color.rgb(30, 140, 60)); setTextColor(Color.WHITE)
-            setOnClickListener { io.execute { tryPost("/crash/rider_ok") } }
-        }, LinearLayout.LayoutParams(0, h, 1f).apply { rightMargin = pad / 2 })
-        big.addView(Button(this).apply {
-            text = "I NEED HELP"; textSize = 18f; setBackgroundColor(Color.rgb(200, 30, 30)); setTextColor(Color.WHITE)
-            setOnClickListener { io.execute { tryPost("/crash/rider_help") } }
-        }, LinearLayout.LayoutParams(0, h, 1f))
+        val big = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, (10 * dp).toInt(), 0, (10 * dp).toInt()) }
+        val h = (72 * dp).toInt()
+        big.addView(pill("I'M OK", Color.rgb(26, 127, 55), size = 22f) { io.execute { tryPost("/crash/rider_ok") } },
+            LinearLayout.LayoutParams(0, h, 1f).apply { rightMargin = (10 * dp).toInt() })
+        big.addView(pill("I NEED HELP", Color.rgb(198, 40, 40), size = 20f) { io.execute { tryPost("/crash/rider_help") } },
+            LinearLayout.LayoutParams(0, h, 1f))
         emergency.addView(big)
-        doneView = TextView(this).apply { textSize = 14f; setPadding(0, pad / 2, 0, pad / 2) }
+        emergency.addView(label("WHAT SAATHI HAS DONE"))
+        doneView = TextView(this).apply { textSize = 16f; setTextColor(Color.rgb(30, 30, 35)); setLineSpacing(4 * dp, 1f) }
         emergency.addView(doneView)
-        emergency.addView(TextView(this).apply { text = "Conversation"; textSize = 13f; setTypeface(null, Typeface.BOLD) })
-        transcriptView = TextView(this).apply { textSize = 15f; setPadding(0, 0, 0, pad / 2) }
+        emergency.addView(View(this).apply { setBackgroundColor(Color.rgb(230, 230, 235)) },
+            LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (1 * dp).toInt()).apply { topMargin = (12 * dp).toInt(); bottomMargin = (12 * dp).toInt() })
+        emergency.addView(label("CONVERSATION"))
+        transcriptView = TextView(this).apply {
+            textSize = 16f; setTextColor(Color.rgb(30, 30, 35)); setLineSpacing(6 * dp, 1f)
+            val p = (12 * dp).toInt(); setPadding(p, p, p, p); background = rounded(Color.rgb(246, 247, 250), 12f)
+        }
         emergency.addView(transcriptView)
-        val row3 = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        row3.addView(Button(this).apply { text = "Call 112"; setOnClickListener { startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:112"))) } },
-            LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
-        row3.addView(Button(this).apply { text = "End"; setOnClickListener { stop() } },
-            LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        val row3 = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, (12 * dp).toInt(), 0, 0) }
+        row3.addView(pill("Call 112", Color.WHITE, Color.rgb(198, 40, 40)) { startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:112"))) }
+            .apply { background = rounded(Color.WHITE, 28f, Color.rgb(198, 40, 40)) },
+            LinearLayout.LayoutParams(0, (52 * dp).toInt(), 1f).apply { rightMargin = (10 * dp).toInt() })
+        row3.addView(pill("End", Color.rgb(90, 90, 100)) { stop() }, LinearLayout.LayoutParams(0, (52 * dp).toInt(), 1f))
         emergency.addView(row3)
-        root.addView(emergency)
+        body.addView(emergency, cardParams())
 
-        // Detection controls
+        // Detection card
+        val det = card()
+        det.addView(label("CRASH DETECTION"))
         val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        btnArm = Button(this).apply { text = "Arm detection"; setOnClickListener { toggleArm() } }
-        row.addView(btnArm)
-        row.addView(Button(this).apply { text = "Simulate crash"; setOnClickListener { simulate() } })
-        row.addView(CheckBox(this).apply {
-            text = "Demo: skip speed"; isChecked = detector.cfg.demoSkipSpeed
+        btnArm = pill("Arm detection", Color.rgb(11, 87, 208), size = 15f) { toggleArm() }
+        row.addView(btnArm, LinearLayout.LayoutParams(0, (48 * dp).toInt(), 1f).apply { rightMargin = (8 * dp).toInt() })
+        row.addView(pill("Simulate crash", Color.rgb(198, 40, 40), size = 15f) { simulate() }, LinearLayout.LayoutParams(0, (48 * dp).toInt(), 1f))
+        det.addView(row)
+        det.addView(CheckBox(this).apply {
+            text = "Demo mode: skip the riding-speed check"; isChecked = detector.cfg.demoSkipSpeed
             setOnCheckedChangeListener { _, c -> detector.cfg.demoSkipSpeed = c }
         })
-        root.addView(row)
-        thrLabel = TextView(this)
-        root.addView(thrLabel)
-        root.addView(SeekBar(this).apply {
+        thrLabel = TextView(this).apply { textSize = 13f; setTextColor(Color.rgb(90, 90, 100)) }
+        det.addView(thrLabel)
+        det.addView(SeekBar(this).apply {
             max = 60
             progress = ((detector.cfg.impactG - 1f) * 10).toInt()
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -171,34 +211,41 @@ class MainActivity : Activity(), SensorEventListener, CrashDetector.Listener {
             })
         })
         graph = SensorGraphView(this)
-        root.addView(graph, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (120 * d).toInt()))
-        liveView = TextView(this).apply { typeface = Typeface.MONOSPACE; textSize = 11f }
-        root.addView(liveView)
+        det.addView(graph, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (120 * dp).toInt()))
+        liveView = TextView(this).apply { typeface = Typeface.MONOSPACE; textSize = 11f; setTextColor(Color.rgb(90, 90, 100)) }
+        det.addView(liveView)
+        body.addView(det, cardParams())
 
-        logView = TextView(this).apply { typeface = Typeface.MONOSPACE; textSize = 10f }
-        scroll = ScrollView(this).apply { addView(logView) }
-        root.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
-        setContentView(root)
+        // Technical log (hidden by default)
+        logView = TextView(this).apply { typeface = Typeface.MONOSPACE; textSize = 10f; setTextColor(Color.rgb(60, 60, 70)) }
+        scroll = ScrollView(this).apply { addView(logView); visibility = View.GONE }
+        body.addView(TextView(this).apply {
+            text = "Show technical log"; textSize = 13f; setTextColor(Color.rgb(11, 87, 208))
+            setOnClickListener { scroll.visibility = if (scroll.visibility == View.GONE) View.VISIBLE else View.GONE }
+        })
+        body.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (220 * dp).toInt()))
+
+        page.addView(ScrollView(this).apply { addView(body) }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
+        setContentView(page)
         setThreshold(detector.cfg.impactG)
-        showState(CrashDetector.State.DISARMED, "tap Arm detection")
+        showState(CrashDetector.State.DISARMED, "Tap Arm detection, or Simulate crash")
     }
 
     private fun setThreshold(g: Float) {
         detector.cfg.impactG = g
         graph.threshold = g
-        thrLabel.text = "Impact threshold %.1f g · still %.1fs · tilt >%.0f°".format(g, detector.cfg.stillWindowS, detector.cfg.orientDeg)
+        thrLabel.text = "Impact threshold %.1f g · still %.1f s · tilt over %.0f°".format(g, detector.cfg.stillWindowS, detector.cfg.orientDeg)
     }
 
     private fun showState(s: CrashDetector.State, detail: String) = runOnUiThread {
-        val (bg, label) = when (s) {
-            CrashDetector.State.DISARMED -> Color.LTGRAY to "DISARMED"
-            CrashDetector.State.MONITORING -> Color.rgb(170, 225, 180) to "MONITORING"
-            CrashDetector.State.IMPACT -> Color.rgb(255, 200, 90) to "IMPACT - checking…"
-            CrashDetector.State.CONFIRMED -> Color.rgb(240, 90, 90) to "CRASH DETECTED"
+        val (bg, title) = when (s) {
+            CrashDetector.State.DISARMED -> Color.rgb(120, 124, 135) to "Detection off"
+            CrashDetector.State.MONITORING -> Color.rgb(26, 127, 55) to "Watching for a crash"
+            CrashDetector.State.IMPACT -> Color.rgb(230, 140, 0) to "Impact detected, checking…"
+            CrashDetector.State.CONFIRMED -> Color.rgb(198, 40, 40) to "Crash detected"
         }
-        stateView.setBackgroundColor(bg)
-        stateView.setTextColor(Color.BLACK)
-        stateView.text = "$label\n$detail"
+        stateView.background = rounded(bg)
+        stateView.text = "$title\n$detail"
         btnArm.text = if (s == CrashDetector.State.DISARMED) "Arm detection" else "Disarm"
     }
 
@@ -358,27 +405,38 @@ class MainActivity : Activity(), SensorEventListener, CrashDetector.Listener {
         }
         maybeSendLinks(inc)
         val tr = inc.optJSONArray("transcript")
-        val convo = StringBuilder()
+        val convoHtml = StringBuilder()
         if (tr != null) for (i in maxOf(0, tr.length() - 8) until tr.length()) {
             val e = tr.getJSONObject(i)
-            convo.append(if (e.optString("who") == "saathi") "Saathi: " else "You: ").append(e.optString("text").trim()).append("\n")
+            val saathi = e.optString("who") == "saathi"
+            if (convoHtml.isNotEmpty()) convoHtml.append("<br>")
+            convoHtml.append(if (saathi) "<font color='#0b57d0'><b>Saathi:</b> " else "<font color='#1e1e23'><b>You:</b> ")
+                .append(TextUtils.htmlEncode(e.optString("text").trim())).append("</font>")
         }
+        val dest = inc.optString("destination").takeIf { it.isNotBlank() && it != "null" }
         runOnUiThread {
             emergency.visibility = if (state in setOf("CLOSED", "CANCELLED")) View.GONE else View.VISIBLE
-            stateView.setBackgroundColor(when (state) {
-                "RIDER_CHECK", "CANCEL_PENDING" -> Color.rgb(255, 200, 90)
-                "BYSTANDER", "COORDINATE" -> Color.rgb(240, 90, 90)
-                "HANDOVER" -> Color.rgb(120, 180, 240)
-                else -> Color.rgb(170, 225, 180)
-            })
-            stateView.text = "SAATHI: $state" + (inc.optString("destination").takeIf { it.isNotBlank() && it != "null" }?.let { "\nTo: $it" } ?: "")
+            val (bg, title) = when (state) {
+                "IMPACT", "DETECTED", "RIDER_CHECK" -> Color.rgb(230, 140, 0) to "Are you okay?"
+                "CANCEL_PENDING" -> Color.rgb(26, 127, 55) to "Cancelling the alert…"
+                "BYSTANDER" -> Color.rgb(198, 40, 40) to "Help is being called"
+                "COORDINATE" -> Color.rgb(198, 40, 40) to "Saathi is guiding the people with you"
+                "HANDOVER" -> Color.rgb(11, 87, 208) to "Ambulance team is here"
+                "CLOSED" -> Color.rgb(90, 90, 100) to "Incident closed"
+                "CANCELLED" -> Color.rgb(26, 127, 55) to "Alert cancelled - you're okay"
+                else -> Color.rgb(90, 90, 100) to state
+            }
+            stateView.background = rounded(bg)
+            stateView.text = title + (dest?.let { "\nGoing to: $it" } ?: "")
             countdown.text = when {
-                left != null -> "Calling family and ambulance in %.0f s unless you're OK".format(left)
-                state == "CANCEL_PENDING" -> "Cancelling… say or tap help if you need it"
+                left != null -> "Calling family and ambulance in %.0f s\nunless you say you're okay".format(left)
+                state == "CANCEL_PENDING" -> "Say \"help\" or tap I NEED HELP if you need it"
                 else -> ""
             }
+            countdown.visibility = if (countdown.text.isNullOrEmpty()) View.GONE else View.VISIBLE
             doneView.text = if (done.isEmpty()) "Nothing sent yet" else done.toString().trim()
-            transcriptView.text = if (convo.isEmpty()) "(listening…)" else convo.toString().trim()
+            transcriptView.text = if (convoHtml.isEmpty()) Html.fromHtml("<i>Listening…</i>", Html.FROM_HTML_MODE_LEGACY)
+                                  else Html.fromHtml(convoHtml.toString(), Html.FROM_HTML_MODE_LEGACY)
         }
         if (state == "CLOSED" || state == "CANCELLED") pollTask?.cancel(false)
     }

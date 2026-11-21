@@ -21,192 +21,575 @@
     "GSR": "MoRTH Good Samaritan guidelines (2015), Section 134A Motor Vehicles Act (2019), Good Samaritan Rules (2020)"
   },
   "excluded": [
-    {"what": "Removing the helmet", "why": "Risk of worsening a neck injury. Guidance for lay helpers is to leave it on unless the airway cannot be managed any other way; we route that decision to the ambulance team."},
-    {"what": "Raising the injured limb or using pressure points to stop bleeding", "why": "Current first-aid guidelines do not recommend them (no evidence of benefit); firm direct pressure is the recommended method."},
-    {"what": "Improvised tourniquets", "why": "Guidelines support tourniquets for life-threatening limb bleeding when trained and a proper device is available; untrained improvised use can cause harm. We escalate to 112 instead (BLEED4)."},
-    {"what": "Raising the legs for shock", "why": "Not advised when trauma is likely, as in a road crash."},
-    {"what": "Neck collars or splinting by bystanders", "why": "Routine use by first-aid providers is not recommended."},
-    {"what": "Giving water, sugar, tea or medicines", "why": "Risk of vomiting and choking; may delay surgery; drug interactions unknown."},
-    {"what": "Keys or anything in the hand or mouth during a fit", "why": "Common Indian myth; can break teeth or cause choking."},
-    {"what": "Toothpaste, oil, butter or ice on burns", "why": "Common home remedies that worsen burns; cool water for 20 minutes is recommended."},
-    {"what": "Mouth-to-mouth rescue breaths", "why": "Hands-only CPR is recommended for untrained lay rescuers and needs no helmet removal."},
-    {"what": "Any diagnosis or prognosis (he is fine / it is serious / he will survive)", "why": "Saathi only reports what it knows."}
+    {
+      "what": "Removing the helmet",
+      "why": "Risk of worsening a neck injury. Guidance for lay helpers is to leave it on unless the airway cannot be managed any other way; we route that decision to the ambulance team."
+    },
+    {
+      "what": "Raising the injured limb or using pressure points to stop bleeding",
+      "why": "Current first-aid guidelines do not recommend them (no evidence of benefit); firm direct pressure is the recommended method."
+    },
+    {
+      "what": "Improvised tourniquets",
+      "why": "Guidelines support tourniquets for life-threatening limb bleeding when trained and a proper device is available; untrained improvised use can cause harm. We escalate to 112 instead (BLEED4)."
+    },
+    {
+      "what": "Raising the legs for shock",
+      "why": "Not advised when trauma is likely, as in a road crash."
+    },
+    {
+      "what": "Neck collars or splinting by bystanders",
+      "why": "Routine use by first-aid providers is not recommended."
+    },
+    {
+      "what": "Giving water, sugar, tea or medicines",
+      "why": "Risk of vomiting and choking; may delay surgery; drug interactions unknown."
+    },
+    {
+      "what": "Keys or anything in the hand or mouth during a fit",
+      "why": "Common Indian myth; can break teeth or cause choking."
+    },
+    {
+      "what": "Toothpaste, oil, butter or ice on burns",
+      "why": "Common home remedies that worsen burns; cool water for 20 minutes is recommended."
+    },
+    {
+      "what": "Mouth-to-mouth rescue breaths",
+      "why": "Hands-only CPR is recommended for untrained lay rescuers and needs no helmet removal."
+    },
+    {
+      "what": "Any diagnosis or prognosis (he is fine / it is serious / he will survive)",
+      "why": "Saathi only reports what it knows."
+    }
   ],
   "lines": [
-    {"id": "AN1", "group": "scene", "node": "D1", "when": "Bystander mode starts; repeat every 20 s until someone answers", "src": [],
-     "en": "This rider has had an accident. I am his phone. Please talk to me. You do not need to unlock anything.",
-     "hi": "इस राइडर का एक्सीडेंट हुआ है। मैं इनका फ़ोन हूँ। कृपया मुझसे बात कीजिए। आपको फ़ोन अनलॉक करने की ज़रूरत नहीं है।",
-     "kn": "ಈ ಸವಾರರಿಗೆ ಅಪಘಾತವಾಗಿದೆ. ನಾನು ಅವರ ಫೋನ್. ದಯವಿಟ್ಟು ನನ್ನ ಜೊತೆ ಮಾತಾಡಿ. ಫೋನ್ ಅನ್‌ಲಾಕ್ ಮಾಡುವ ಅಗತ್ಯವಿಲ್ಲ."},
-    {"id": "GS1", "group": "scene", "node": "D5", "when": "Right after the first bystander reply, and whenever they sound afraid", "src": ["GSR"],
-     "en": "You will not get into trouble for helping. You do not have to give your name. No one can force you to be a witness, and the hospital cannot ask you to pay.",
-     "hi": "मदद करने पर आप किसी मुसीबत में नहीं पड़ेंगे। आपको अपना नाम बताने की ज़रूरत नहीं है। कोई आपको गवाह बनने के लिए मजबूर नहीं कर सकता, और अस्पताल आपसे पैसे नहीं माँग सकता।",
-     "kn": "ಸಹಾಯ ಮಾಡಿದರೆ ನಿಮಗೆ ಯಾವುದೇ ತೊಂದರೆ ಆಗುವುದಿಲ್ಲ. ನಿಮ್ಮ ಹೆಸರು ಹೇಳುವ ಅಗತ್ಯವಿಲ್ಲ. ಸಾಕ್ಷಿಯಾಗಲು ಯಾರೂ ಒತ್ತಾಯಿಸುವಂತಿಲ್ಲ, ಆಸ್ಪತ್ರೆ ಹಣ ಕೇಳುವಂತಿಲ್ಲ."},
-    {"id": "HOLD", "group": "scene", "node": "E-OUT", "when": "Any question outside this protocol; the question is relayed to the 112 operator", "src": [],
-     "en": "I can't advise on that. Please keep him still. I am asking the ambulance team now.",
-     "hi": "मैं इस बारे में सलाह नहीं दे सकती। कृपया इन्हें हिलने मत दीजिए। मैं अभी एम्बुलेंस टीम से पूछ रही हूँ।",
-     "kn": "ಅದರ ಬಗ್ಗೆ ನಾನು ಸಲಹೆ ಕೊಡಲು ಆಗುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು ಅವರು ಅಲುಗಾಡದಂತೆ ನೋಡಿಕೊಳ್ಳಿ. ನಾನು ಈಗಲೇ ಆಂಬ್ಯುಲೆನ್ಸ್ ತಂಡವನ್ನು ಕೇಳುತ್ತಿದ್ದೇನೆ."},
-    {"id": "ASK112", "group": "scene", "node": "F4", "when": "112 track failed, or offline mode", "src": ["IFAM"],
-     "en": "If you have a phone, please call 112. It works even without balance.",
-     "hi": "अगर आपके पास फ़ोन है, तो कृपया 112 पर कॉल कीजिए। यह बिना बैलेंस के भी लगता है।",
-     "kn": "ನಿಮ್ಮ ಬಳಿ ಫೋನ್ ಇದ್ದರೆ, ದಯವಿಟ್ಟು 112 ಗೆ ಕರೆ ಮಾಡಿ. ಬ್ಯಾಲೆನ್ಸ್ ಇಲ್ಲದಿದ್ದರೂ ಕರೆ ಹೋಗುತ್ತದೆ."},
-
-    {"id": "SAFE1", "group": "safety", "node": "E0", "when": "First first-aid step, briefly", "src": ["ERC2021", "IFAM"],
-     "en": "First, stay safe. Ask someone to warn and slow down the traffic. Do not stand in the middle of the road.",
-     "hi": "पहले अपनी सुरक्षा देखिए। किसी से कहिए कि ट्रैफ़िक को धीमा करवाए। सड़क के बीच में मत खड़े होइए।",
-     "kn": "ಮೊದಲು ನೀವು ಸುರಕ್ಷಿತವಾಗಿರಿ. ವಾಹನಗಳನ್ನು ನಿಧಾನ ಮಾಡಿಸಲು ಯಾರಿಗಾದರೂ ಹೇಳಿ. ರಸ್ತೆಯ ಮಧ್ಯದಲ್ಲಿ ನಿಲ್ಲಬೇಡಿ."},
-    {"id": "SAFE2", "group": "safety", "node": "E0", "when": "Bike engine running, fire or petrol smell reported", "src": ["IFAM"],
-     "en": "If the bike's engine is running, switch it off. If you see fire or smell petrol, move everyone back.",
-     "hi": "अगर बाइक का इंजन चालू है, तो उसे बंद कर दीजिए। अगर आग दिखे या पेट्रोल की गंध आए, तो सबको पीछे हटाइए।",
-     "kn": "ಬೈಕ್ ಎಂಜಿನ್ ಚಾಲೂ ಇದ್ದರೆ ಅದನ್ನು ಆಫ್ ಮಾಡಿ. ಬೆಂಕಿ ಕಂಡರೆ ಅಥವಾ ಪೆಟ್ರೋಲ್ ವಾಸನೆ ಬಂದರೆ, ಎಲ್ಲರನ್ನೂ ದೂರ ಸರಿಸಿ."},
-    {"id": "SAFE3", "group": "safety", "node": "E0", "when": "Bystander wants to move him", "src": ["ERC2021", "IFRC2020"],
-     "en": "Do not move him, unless he is in danger from fire or traffic.",
-     "hi": "जब तक आग या ट्रैफ़िक से ख़तरा न हो, इन्हें मत हिलाइए।",
-     "kn": "ಬೆಂಕಿ ಅಥವಾ ವಾಹನಗಳಿಂದ ಅಪಾಯ ಇಲ್ಲದಿದ್ದರೆ, ಅವರನ್ನು ಅಲ್ಲಿಂದ ಸರಿಸಬೇಡಿ."},
-    {"id": "PIN1", "group": "safety", "node": "E12", "when": "Bike is lying on the rider", "src": ["IFAM"],
-     "en": "If the bike is lying on him, lift the bike off with help from others. Do not pull him out.",
-     "hi": "अगर बाइक इनके ऊपर गिरी है, तो दूसरों की मदद से बाइक उठाइए। इन्हें खींचकर मत निकालिए।",
-     "kn": "ಬೈಕ್ ಅವರ ಮೇಲೆ ಬಿದ್ದಿದ್ದರೆ, ಬೇರೆಯವರ ಸಹಾಯದಿಂದ ಬೈಕ್ ಎತ್ತಿ. ಅವರನ್ನು ಎಳೆಯಬೇಡಿ."},
-
-    {"id": "RESP1", "group": "assess", "node": "E1", "when": "Responsiveness check", "src": ["ERC2021"],
-     "en": "Talk to him loudly and tap his shoulders. Do not shake him. Does he answer or open his eyes?",
-     "hi": "इनसे ज़ोर से बात कीजिए और कंधे थपथपाइए। इन्हें झकझोरिए मत। क्या ये जवाब देते हैं या आँखें खोलते हैं?",
-     "kn": "ಅವರ ಜೊತೆ ಜೋರಾಗಿ ಮಾತಾಡಿ, ಭುಜ ತಟ್ಟಿ. ಅವರನ್ನು ಅಲುಗಾಡಿಸಬೇಡಿ. ಅವರು ಉತ್ತರ ಕೊಡುತ್ತಾರಾ ಅಥವಾ ಕಣ್ಣು ತೆರೆಯುತ್ತಾರಾ?"},
-    {"id": "VISOR1", "group": "assess", "node": "E1", "when": "Full-face helmet; before the breathing check", "src": ["IFAM"],
-     "en": "You can lift the helmet's visor to see his face. Do not take the helmet off.",
-     "hi": "चेहरा देखने के लिए आप हेलमेट का शीशा ऊपर कर सकते हैं। हेलमेट मत उतारिए।",
-     "kn": "ಮುಖ ಕಾಣಲು ಹೆಲ್ಮೆಟ್‌ನ ಗಾಜನ್ನು ಮೇಲೆತ್ತಬಹುದು. ಹೆಲ್ಮೆಟ್ ತೆಗೆಯಬೇಡಿ."},
-    {"id": "BREATH1", "group": "assess", "node": "E2", "when": "Unresponsive", "src": ["ERC2021", "AHA2020"],
-     "en": "Look at his chest for up to ten seconds. Is it rising and falling normally?",
-     "hi": "दस सेकंड तक इनकी छाती देखिए। क्या वह सामान्य रूप से ऊपर-नीचे हो रही है?",
-     "kn": "ಹತ್ತು ಸೆಕೆಂಡ್ ಅವರ ಎದೆಯನ್ನು ನೋಡಿ. ಅದು ಸಾಮಾನ್ಯವಾಗಿ ಮೇಲೆ ಕೆಳಗೆ ಆಗುತ್ತಿದೆಯಾ?"},
-    {"id": "BREATH2", "group": "assess", "node": "E2", "when": "Bystander unsure, or describes gasping", "src": ["ERC2021", "AHA2020"],
-     "en": "Gasping or very slow breaths are not normal breathing.",
-     "hi": "हाँफना या बहुत धीमी साँस लेना सामान्य साँस नहीं है।",
-     "kn": "ಏದುಸಿರು ಅಥವಾ ತುಂಬಾ ನಿಧಾನ ಉಸಿರು ಸಾಮಾನ್ಯ ಉಸಿರಾಟವಲ್ಲ."},
-
-    {"id": "CPR0", "group": "cpr", "node": "E3", "when": "Not breathing normally AND lying face down or on his side", "src": ["ERC2021"],
-     "en": "He must be on his back on firm ground. With others, roll him over together, keeping his head, neck and body in a straight line.",
-     "hi": "इन्हें सख़्त ज़मीन पर पीठ के बल होना चाहिए। दूसरों के साथ मिलकर इन्हें पलटिए, सिर, गर्दन और शरीर एक सीध में रखिए।",
-     "kn": "ಅವರು ಗಟ್ಟಿ ನೆಲದ ಮೇಲೆ ಬೆನ್ನಿನ ಮೇಲೆ ಮಲಗಿರಬೇಕು. ಬೇರೆಯವರ ಜೊತೆ ಸೇರಿ, ತಲೆ, ಕುತ್ತಿಗೆ, ದೇಹ ನೇರವಾಗಿರುವಂತೆ ಅವರನ್ನು ತಿರುಗಿಸಿ."},
-    {"id": "CPR1", "group": "cpr", "node": "E3", "when": "Not breathing normally; also triggers PRIORITY re-brief to 112", "src": ["ERC2021", "AHA2020"],
-     "en": "Start chest pushes now. Kneel beside him. Put the heel of one hand on the centre of his chest, and your other hand on top.",
-     "hi": "अभी छाती दबाना शुरू कीजिए। इनके बगल में घुटनों पर बैठिए। एक हथेली का निचला हिस्सा छाती के बीच में रखिए, दूसरा हाथ उसके ऊपर।",
-     "kn": "ಈಗಲೇ ಎದೆ ಒತ್ತಲು ಶುರು ಮಾಡಿ. ಅವರ ಪಕ್ಕದಲ್ಲಿ ಮಂಡಿಯೂರಿ. ಒಂದು ಅಂಗೈಯ ಕೆಳಭಾಗವನ್ನು ಎದೆಯ ಮಧ್ಯದಲ್ಲಿ ಇಡಿ, ಇನ್ನೊಂದು ಕೈ ಅದರ ಮೇಲೆ."},
-    {"id": "CPR2", "group": "cpr", "node": "E3", "when": "Directly after CPR1", "src": ["ERC2021", "AHA2020"],
-     "en": "Keep your arms straight. Push down hard, about five centimetres, then let the chest come back up. Push fast, about two times every second.",
-     "hi": "हाथ सीधे रखिए। ज़ोर से लगभग पाँच सेंटीमीटर नीचे दबाइए, फिर छाती को ऊपर आने दीजिए। तेज़ी से दबाइए, हर सेकंड में लगभग दो बार।",
-     "kn": "ಕೈಗಳನ್ನು ನೇರವಾಗಿಡಿ. ಸುಮಾರು ಐದು ಸೆಂಟಿಮೀಟರ್ ಜೋರಾಗಿ ಒತ್ತಿ, ನಂತರ ಎದೆ ಮೇಲೆ ಬರಲು ಬಿಡಿ. ಸೆಕೆಂಡಿಗೆ ಸುಮಾರು ಎರಡು ಬಾರಿ ವೇಗವಾಗಿ ಒತ್ತಿ."},
-    {"id": "CPR3", "group": "cpr", "node": "E3", "when": "Directly after CPR2; repeat every 2 minutes", "src": ["ERC2021", "AHA2020"],
-     "en": "Do not stop until the ambulance team takes over, or he starts breathing normally. If someone else is there, swap every two minutes.",
-     "hi": "जब तक एम्बुलेंस टीम न संभाले या ये ठीक से साँस न लेने लगें, रुकिए मत। कोई और हो, तो हर दो मिनट में बदल लीजिए।",
-     "kn": "ಆಂಬ್ಯುಲೆನ್ಸ್ ತಂಡ ಬರುವವರೆಗೆ ಅಥವಾ ಅವರು ಸರಿಯಾಗಿ ಉಸಿರಾಡುವವರೆಗೆ ನಿಲ್ಲಿಸಬೇಡಿ. ಬೇರೆಯವರಿದ್ದರೆ ಎರಡು ನಿಮಿಷಕ್ಕೊಮ್ಮೆ ಬದಲಾಯಿಸಿ."},
-    {"id": "CPR4", "group": "cpr", "node": "E3", "when": "Bystander asks about the helmet during CPR", "src": ["AHA2020", "IFAM"],
-     "en": "Keep the helmet on. You do not need to remove it for chest pushes.",
-     "hi": "हेलमेट पहना रहने दीजिए। छाती दबाने के लिए उसे उतारने की ज़रूरत नहीं है।",
-     "kn": "ಹೆಲ್ಮೆಟ್ ಹಾಗೆಯೇ ಇರಲಿ. ಎದೆ ಒತ್ತಲು ಅದನ್ನು ತೆಗೆಯುವ ಅಗತ್ಯವಿಲ್ಲ."},
-
-    {"id": "BLEED1", "group": "bleeding", "node": "E4", "when": "After breathing is confirmed, or for a conscious rider", "src": ["ERC2021"],
-     "en": "Is blood flowing heavily from anywhere?",
-     "hi": "क्या कहीं से बहुत ज़्यादा ख़ून बह रहा है?",
-     "kn": "ಎಲ್ಲಿಂದಾದರೂ ತುಂಬಾ ರಕ್ತ ಹರಿಯುತ್ತಿದೆಯಾ?"},
-    {"id": "BLEED2", "group": "bleeding", "node": "E4a", "when": "Heavy bleeding reported", "src": ["ERC2021", "IFRC2020", "IFAM"],
-     "en": "Press hard on the wound with a clean cloth, like a handkerchief, dupatta or shirt. If there is no cloth, use your hand.",
-     "hi": "घाव पर किसी साफ़ कपड़े से ज़ोर से दबाइए, जैसे रूमाल, दुपट्टा या शर्ट। कपड़ा न हो तो हाथ से दबाइए।",
-     "kn": "ಗಾಯದ ಮೇಲೆ ಸ್ವಚ್ಛ ಬಟ್ಟೆಯಿಂದ ಜೋರಾಗಿ ಒತ್ತಿ, ಕರವಸ್ತ್ರ, ದುಪಟ್ಟಾ ಅಥವಾ ಶರ್ಟ್ ಆಗಬಹುದು. ಬಟ್ಟೆ ಇಲ್ಲದಿದ್ದರೆ ಕೈಯಿಂದ ಒತ್ತಿ."},
-    {"id": "BLEED3", "group": "bleeding", "node": "E4a", "when": "Directly after BLEED2", "src": ["ERC2021", "IFRC2020"],
-     "en": "Keep pressing hard without stopping. Do not lift the cloth to check. If blood soaks through, add more cloth on top and keep pressing.",
-     "hi": "बिना रुके ज़ोर से दबाते रहिए। देखने के लिए कपड़ा मत हटाइए। ख़ून बाहर आए, तो ऊपर और कपड़ा रखिए और दबाते रहिए।",
-     "kn": "ನಿಲ್ಲಿಸದೆ ಜೋರಾಗಿ ಒತ್ತುತ್ತಲೇ ಇರಿ. ನೋಡಲು ಬಟ್ಟೆ ತೆಗೆಯಬೇಡಿ. ರಕ್ತ ಹೊರಬಂದರೆ, ಮೇಲೆ ಇನ್ನಷ್ಟು ಬಟ್ಟೆ ಇಟ್ಟು ಒತ್ತುತ್ತಲೇ ಇರಿ."},
-    {"id": "BLEED4", "group": "bleeding", "node": "E4a", "when": "Bleeding not stopping despite pressure; also PRIORITY to 112", "src": ["ERC2021"],
-     "en": "Keep pressing as hard as you can. I am telling the ambulance team this is urgent.",
-     "hi": "जितना हो सके उतना ज़ोर से दबाते रहिए। मैं एम्बुलेंस टीम को बता रही हूँ कि यह बहुत ज़रूरी है।",
-     "kn": "ಎಷ್ಟು ಸಾಧ್ಯವೋ ಅಷ್ಟು ಜೋರಾಗಿ ಒತ್ತುತ್ತಲೇ ಇರಿ. ಇದು ತುರ್ತು ಎಂದು ನಾನು ಆಂಬ್ಯುಲೆನ್ಸ್ ತಂಡಕ್ಕೆ ತಿಳಿಸುತ್ತಿದ್ದೇನೆ."},
-
-    {"id": "UNC1", "group": "unconscious", "node": "E5", "when": "Unresponsive but breathing normally", "src": ["ERC2021", "IFAM"],
-     "en": "He is breathing. Do not take off his helmet, and do not move his head or neck. Stay with him and keep watching his breathing.",
-     "hi": "ये साँस ले रहे हैं। हेलमेट मत उतारिए, और सिर या गर्दन मत हिलाइए। इनके पास रहिए और इनकी साँस पर नज़र रखिए।",
-     "kn": "ಅವರು ಉಸಿರಾಡುತ್ತಿದ್ದಾರೆ. ಹೆಲ್ಮೆಟ್ ತೆಗೆಯಬೇಡಿ, ತಲೆ ಅಥವಾ ಕುತ್ತಿಗೆ ಅಲ್ಲಾಡಿಸಬೇಡಿ. ಅವರ ಜೊತೆ ಇದ್ದು ಉಸಿರಾಟ ಗಮನಿಸುತ್ತಿರಿ."},
-    {"id": "UNC2", "group": "unconscious", "node": "E5", "when": "Re-check every 2 minutes while unresponsive", "src": ["ERC2021"],
-     "en": "Is he still breathing normally?",
-     "hi": "क्या ये अब भी ठीक से साँस ले रहे हैं?",
-     "kn": "ಅವರು ಈಗಲೂ ಸರಿಯಾಗಿ ಉಸಿರಾಡುತ್ತಿದ್ದಾರಾ?"},
-    {"id": "VOMIT1", "group": "unconscious", "node": "E5a", "when": "Vomiting or gurgling reported", "src": ["ERC2021", "IFRC2020", "IFAM"],
-     "en": "If he is vomiting or making gurgling sounds, turn him onto his side. Do it with two or three people.",
-     "hi": "अगर ये उल्टी कर रहे हैं या गले से गड़गड़ की आवाज़ आ रही है, तो इन्हें करवट पर कीजिए। दो-तीन लोग मिलकर कीजिए।",
-     "kn": "ಅವರು ವಾಂತಿ ಮಾಡುತ್ತಿದ್ದರೆ ಅಥವಾ ಗಂಟಲಿನಿಂದ ಗುರುಗುರು ಸದ್ದು ಬರುತ್ತಿದ್ದರೆ, ಎರಡು-ಮೂರು ಜನ ಸೇರಿ ಅವರನ್ನು ಒಂದು ಬದಿಗೆ ತಿರುಗಿಸಿ."},
-    {"id": "VOMIT2", "group": "unconscious", "node": "E5a", "when": "Directly after VOMIT1", "src": ["ERC2021", "IFAM"],
-     "en": "Keep his head, neck and body in one straight line as you turn him. Keep the helmet on.",
-     "hi": "पलटते समय सिर, गर्दन और शरीर एक सीध में रखिए। हेलमेट पहना रहने दीजिए।",
-     "kn": "ತಿರುಗಿಸುವಾಗ ತಲೆ, ಕುತ್ತಿಗೆ ಮತ್ತು ದೇಹ ಒಂದೇ ನೇರದಲ್ಲಿರಲಿ. ಹೆಲ್ಮೆಟ್ ತೆಗೆಯಬೇಡಿ."},
-
-    {"id": "CONS1", "group": "conscious", "node": "E6", "when": "Rider is responsive", "src": ["ERC2021", "IFAM"],
-     "en": "Tell him to lie still and not to get up. Ask him not to move his head.",
-     "hi": "इनसे कहिए कि लेटे रहें और उठें नहीं। सिर न हिलाने को कहिए।",
-     "kn": "ಅಲುಗಾಡದೆ ಮಲಗಿರಲು, ಏಳದಿರಲು ಅವರಿಗೆ ಹೇಳಿ. ತಲೆ ಅಲ್ಲಾಡಿಸಬೇಡಿ ಎಂದು ಹೇಳಿ."},
-    {"id": "CONS2", "group": "conscious", "node": "E6", "when": "Directly after CONS1", "src": ["ERC2021", "IFAM"],
-     "en": "Do not give him anything to eat or drink. Cover him with a cloth to keep him warm, and keep talking to him.",
-     "hi": "इन्हें खाने-पीने को कुछ मत दीजिए। गर्म रखने के लिए कपड़े से ढक दीजिए, और इनसे बात करते रहिए।",
-     "kn": "ಅವರಿಗೆ ತಿನ್ನಲು ಅಥವಾ ಕುಡಿಯಲು ಏನೂ ಕೊಡಬೇಡಿ. ಬೆಚ್ಚಗಿರಲು ಬಟ್ಟೆ ಹೊದಿಸಿ, ಅವರ ಜೊತೆ ಮಾತಾಡುತ್ತಿರಿ."},
-    {"id": "CONS3", "group": "conscious", "node": "E6", "when": "After CONS2; answer is recorded word for word", "src": [],
-     "en": "Please ask him where it hurts.",
-     "hi": "कृपया इनसे पूछिए कि दर्द कहाँ हो रहा है।",
-     "kn": "ಎಲ್ಲಿ ನೋವಾಗುತ್ತಿದೆ ಎಂದು ದಯವಿಟ್ಟು ಅವರನ್ನು ಕೇಳಿ."},
-
-    {"id": "FRAC1", "group": "injuries", "node": "E7", "when": "Limb looks bent or bone is visible", "src": ["ERC2021", "IFAM"],
-     "en": "Do not try to straighten an injured arm or leg. Leave it as it is. Cover any open wound with a clean cloth.",
-     "hi": "चोट लगे हाथ या पैर को सीधा करने की कोशिश मत कीजिए। जैसा है वैसा रहने दीजिए। खुले घाव को साफ़ कपड़े से ढक दीजिए।",
-     "kn": "ಗಾಯಗೊಂಡ ಕೈ ಅಥವಾ ಕಾಲನ್ನು ನೇರ ಮಾಡಬೇಡಿ. ಹೇಗಿದೆಯೋ ಹಾಗೆಯೇ ಬಿಡಿ. ತೆರೆದ ಗಾಯವನ್ನು ಸ್ವಚ್ಛ ಬಟ್ಟೆಯಿಂದ ಮುಚ್ಚಿ."},
-    {"id": "OBJ1", "group": "injuries", "node": "E8", "when": "Object stuck in the body", "src": ["IFAM", "IFRC2020"],
-     "en": "Do not pull out anything stuck in the body. Press cloth around it, not on it.",
-     "hi": "शरीर में घुसी किसी चीज़ को बाहर मत खींचिए। उसके चारों ओर कपड़ा रखकर दबाइए, उसके ऊपर नहीं।",
-     "kn": "ದೇಹದೊಳಗೆ ಚುಚ್ಚಿರುವ ವಸ್ತುವನ್ನು ಹೊರಗೆ ಎಳೆಯಬೇಡಿ. ಅದರ ಸುತ್ತ ಬಟ್ಟೆ ಇಟ್ಟು ಒತ್ತಿ, ಅದರ ಮೇಲೆ ಅಲ್ಲ."},
-    {"id": "SEIZ1", "group": "injuries", "node": "E9", "when": "Fitting or shaking reported", "src": ["ERC2021", "IFAM"],
-     "en": "Do not hold him down. Do not put anything in his mouth or hand. Move hard things away, and tell me when the shaking stops.",
-     "hi": "इन्हें पकड़कर मत दबाइए। मुँह या हाथ में कुछ मत डालिए। सख़्त चीज़ें दूर हटाइए, और झटके रुकें तो मुझे बताइए।",
-     "kn": "ಅವರನ್ನು ಹಿಡಿದು ಒತ್ತಬೇಡಿ. ಬಾಯಿಗೆ ಅಥವಾ ಕೈಗೆ ಏನೂ ಕೊಡಬೇಡಿ. ಗಟ್ಟಿ ವಸ್ತುಗಳನ್ನು ದೂರ ಸರಿಸಿ, ನಡುಕ ನಿಂತಾಗ ಹೇಳಿ."},
-    {"id": "BURN1", "group": "injuries", "node": "E10", "when": "Burn from exhaust or engine, and no higher-priority threat", "src": ["ERC2021", "IFRC2020"],
-     "en": "Pour clean, cool water over the burn for twenty minutes. Do not put toothpaste, oil or ice on it.",
-     "hi": "जले हुए हिस्से पर बीस मिनट तक साफ़, ठंडा पानी डालिए। उस पर टूथपेस्ट, तेल या बर्फ़ मत लगाइए।",
-     "kn": "ಸುಟ್ಟ ಭಾಗದ ಮೇಲೆ ಇಪ್ಪತ್ತು ನಿಮಿಷ ಸ್ವಚ್ಛ, ತಣ್ಣೀರು ಸುರಿಯಿರಿ. ಟೂತ್‌ಪೇಸ್ಟ್, ಎಣ್ಣೆ ಅಥವಾ ಐಸ್ ಹಚ್ಚಬೇಡಿ."},
-    {"id": "MULTI1", "group": "injuries", "node": "E11", "when": "More than one person hurt", "src": ["IFAM"],
-     "en": "How many people are hurt? Let's check each one, starting with anyone who is not talking.",
-     "hi": "कितने लोगों को चोट लगी है? हर एक को देखते हैं, पहले उन्हें जो बोल नहीं रहे।",
-     "kn": "ಎಷ್ಟು ಜನರಿಗೆ ಗಾಯವಾಗಿದೆ? ಪ್ರತಿಯೊಬ್ಬರನ್ನೂ ನೋಡೋಣ, ಮೊದಲು ಮಾತಾಡದೇ ಇರುವವರನ್ನು."},
-
-    {"id": "HELMET1", "group": "donts", "node": "E-HELMET", "when": "Bystander wants to remove the helmet", "src": ["IFAM", "IFRC2020"],
-     "en": "Please do not take off his helmet. It can hurt his neck. The ambulance team will remove it.",
-     "hi": "कृपया इनका हेलमेट मत उतारिए। इससे गर्दन को चोट लग सकती है। एम्बुलेंस टीम इसे उतारेगी।",
-     "kn": "ದಯವಿಟ್ಟು ಅವರ ಹೆಲ್ಮೆಟ್ ತೆಗೆಯಬೇಡಿ. ಅದರಿಂದ ಕುತ್ತಿಗೆಗೆ ಪೆಟ್ಟಾಗಬಹುದು. ಆಂಬ್ಯುಲೆನ್ಸ್ ತಂಡ ಅದನ್ನು ತೆಗೆಯುತ್ತದೆ."},
-    {"id": "WATER1", "group": "donts", "node": "E-WATER", "when": "Bystander wants to give water, food, tea or medicine", "src": ["IFAM"],
-     "en": "Please do not give him water, food or medicine yet. The doctors will decide.",
-     "hi": "अभी इन्हें पानी, खाना या दवा मत दीजिए। डॉक्टर तय करेंगे।",
-     "kn": "ಈಗ ಅವರಿಗೆ ನೀರು, ಊಟ ಅಥವಾ ಔಷಧಿ ಕೊಡಬೇಡಿ. ವೈದ್ಯರು ನಿರ್ಧರಿಸುತ್ತಾರೆ."},
-
-    {"id": "TRANS1", "group": "transport", "node": "E-TRANSPORT", "when": "Bystander wants to take him in a private vehicle (default answer)", "src": ["ERC2021", "IFAM"],
-     "en": "Please wait for the ambulance. Moving him without support can hurt his neck and back.",
-     "hi": "कृपया एम्बुलेंस का इंतज़ार कीजिए। बिना सहारे के हिलाने से गर्दन और पीठ को चोट लग सकती है।",
-     "kn": "ದಯವಿಟ್ಟು ಆಂಬ್ಯುಲೆನ್ಸ್‌ಗಾಗಿ ಕಾಯಿರಿ. ಸರಿಯಾದ ಆಸರೆ ಇಲ್ಲದೆ ಸರಿಸಿದರೆ ಕುತ್ತಿಗೆ ಮತ್ತು ಬೆನ್ನಿಗೆ ಪೆಟ್ಟಾಗಬಹುದು."},
-    {"id": "TRANS2", "group": "transport", "node": "E-TRANSPORT", "when": "ONLY after the 112 operator approves private transport", "src": ["IFAM"], "requires": "operator_approval",
-     "en": "The ambulance team says to bring him. Use several people. Keep him lying flat, with his head, neck and body in a straight line.",
-     "hi": "एम्बुलेंस टीम ने इन्हें लाने को कहा है। कई लोग मिलकर उठाइए। इन्हें सीधा लिटाकर रखिए, सिर, गर्दन और शरीर एक सीध में।",
-     "kn": "ಅವರನ್ನು ಕರೆತರಲು ಆಂಬ್ಯುಲೆನ್ಸ್ ತಂಡ ಹೇಳಿದೆ. ಹಲವು ಜನ ಸೇರಿ ಎತ್ತಿ. ಅವರನ್ನು ನೇರವಾಗಿ ಮಲಗಿಸಿ, ತಲೆ, ಕುತ್ತಿಗೆ, ದೇಹ ಒಂದೇ ನೇರದಲ್ಲಿರಲಿ."},
-
-    {"id": "OFF1", "group": "offline", "node": "B9", "when": "Offline loop (no data or agent unavailable), first clip", "src": [],
-     "en": "This rider has had an accident, and my internet is not working. Please call 112 from your phone.",
-     "hi": "इस राइडर का एक्सीडेंट हुआ है, और मेरा इंटरनेट काम नहीं कर रहा। कृपया अपने फ़ोन से 112 पर कॉल कीजिए।",
-     "kn": "ಈ ಸವಾರರಿಗೆ ಅಪಘಾತವಾಗಿದೆ, ನನ್ನ ಇಂಟರ್ನೆಟ್ ಕೆಲಸ ಮಾಡುತ್ತಿಲ್ಲ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಫೋನಿನಿಂದ 112 ಗೆ ಕರೆ ಮಾಡಿ."},
-    {"id": "OFF2", "group": "offline", "node": "B9", "when": "Offline loop, only after the SMS was actually sent", "src": [],
-     "en": "I have sent his family a message with this location.",
-     "hi": "मैंने इनके परिवार को इस जगह की जानकारी के साथ मैसेज भेज दिया है।",
-     "kn": "ಈ ಸ್ಥಳದ ಮಾಹಿತಿಯೊಂದಿಗೆ ಅವರ ಕುಟುಂಬಕ್ಕೆ ಸಂದೇಶ ಕಳುಹಿಸಿದ್ದೇನೆ."},
-    {"id": "OFF3", "group": "offline", "node": "B9", "when": "Offline loop (cannot ask questions, so it is conditional)", "src": ["ERC2021", "AHA2020"],
-     "en": "If he is not breathing normally, push hard and fast on the centre of his chest until help arrives.",
-     "hi": "अगर ये ठीक से साँस नहीं ले रहे, तो मदद आने तक छाती के बीच में ज़ोर से और तेज़ी से दबाइए।",
-     "kn": "ಅವರು ಸರಿಯಾಗಿ ಉಸಿರಾಡುತ್ತಿಲ್ಲದಿದ್ದರೆ, ಸಹಾಯ ಬರುವವರೆಗೆ ಎದೆಯ ಮಧ್ಯದಲ್ಲಿ ಜೋರಾಗಿ, ವೇಗವಾಗಿ ಒತ್ತಿ."},
-    {"id": "OFF4", "group": "offline", "node": "B9", "when": "Offline loop", "src": ["ERC2021"],
-     "en": "If he is bleeding heavily, press hard on the wound with a cloth and keep pressing.",
-     "hi": "अगर बहुत ख़ून बह रहा है, तो घाव पर कपड़े से ज़ोर से दबाइए और दबाते रहिए।",
-     "kn": "ತುಂಬಾ ರಕ್ತ ಹರಿಯುತ್ತಿದ್ದರೆ, ಗಾಯದ ಮೇಲೆ ಬಟ್ಟೆಯಿಂದ ಜೋರಾಗಿ ಒತ್ತಿ, ಒತ್ತುತ್ತಲೇ ಇರಿ."}
+    {
+      "id": "AN1",
+      "group": "scene",
+      "node": "D1",
+      "when": "Bystander mode starts; repeat every 20 s until someone answers",
+      "src": [],
+      "en": "This rider has had an accident. I am his phone. Please talk to me. You do not need to unlock anything.",
+      "hi": "इस राइडर का एक्सीडेंट हुआ है। मैं इनका फ़ोन हूँ। कृपया मुझसे बात कीजिए। आपको फ़ोन अनलॉक करने की ज़रूरत नहीं है।",
+      "kn": "ಈ ಸವಾರರಿಗೆ ಅಪಘಾತವಾಗಿದೆ. ನಾನು ಅವರ ಫೋನ್. ದಯವಿಟ್ಟು ನನ್ನ ಜೊತೆ ಮಾತಾಡಿ. ಫೋನ್ ಅನ್‌ಲಾಕ್ ಮಾಡುವ ಅಗತ್ಯವಿಲ್ಲ."
+    },
+    {
+      "id": "GS1",
+      "group": "scene",
+      "node": "D5",
+      "when": "Right after the first bystander reply, and whenever they sound afraid",
+      "src": [
+        "GSR"
+      ],
+      "en": "You will not get into trouble for helping. You do not have to give your name. No one can force you to be a witness, and the hospital cannot ask you to pay.",
+      "hi": "मदद करने पर आप किसी मुसीबत में नहीं पड़ेंगे। आपको अपना नाम बताने की ज़रूरत नहीं है। कोई आपको गवाह बनने के लिए मजबूर नहीं कर सकता, और अस्पताल आपसे पैसे नहीं माँग सकता।",
+      "kn": "ಸಹಾಯ ಮಾಡಿದರೆ ನಿಮಗೆ ಯಾವುದೇ ತೊಂದರೆ ಆಗುವುದಿಲ್ಲ. ನಿಮ್ಮ ಹೆಸರು ಹೇಳುವ ಅಗತ್ಯವಿಲ್ಲ. ಸಾಕ್ಷಿಯಾಗಲು ಯಾರೂ ಒತ್ತಾಯಿಸುವಂತಿಲ್ಲ, ಆಸ್ಪತ್ರೆ ಹಣ ಕೇಳುವಂತಿಲ್ಲ."
+    },
+    {
+      "id": "HOLD",
+      "group": "scene",
+      "node": "E-OUT",
+      "when": "Any question outside this protocol; the question is relayed to the 112 operator",
+      "src": [],
+      "en": "I can't advise on that. Please keep him still. I am asking the ambulance team now.",
+      "hi": "मैं इस बारे में सलाह नहीं दे सकती। कृपया इन्हें हिलने मत दीजिए। मैं अभी एम्बुलेंस टीम से पूछ रही हूँ।",
+      "kn": "ಅದರ ಬಗ್ಗೆ ನಾನು ಸಲಹೆ ಕೊಡಲು ಆಗುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು ಅವರು ಅಲುಗಾಡದಂತೆ ನೋಡಿಕೊಳ್ಳಿ. ನಾನು ಈಗಲೇ ಆಂಬ್ಯುಲೆನ್ಸ್ ತಂಡವನ್ನು ಕೇಳುತ್ತಿದ್ದೇನೆ."
+    },
+    {
+      "id": "ASK112",
+      "group": "scene",
+      "node": "F4",
+      "when": "112 track failed, or offline mode",
+      "src": [
+        "IFAM"
+      ],
+      "en": "If you have a phone, please call 112. It works even without balance.",
+      "hi": "अगर आपके पास फ़ोन है, तो कृपया 112 पर कॉल कीजिए। यह बिना बैलेंस के भी लगता है।",
+      "kn": "ನಿಮ್ಮ ಬಳಿ ಫೋನ್ ಇದ್ದರೆ, ದಯವಿಟ್ಟು 112 ಗೆ ಕರೆ ಮಾಡಿ. ಬ್ಯಾಲೆನ್ಸ್ ಇಲ್ಲದಿದ್ದರೂ ಕರೆ ಹೋಗುತ್ತದೆ."
+    },
+    {
+      "id": "SAFE1",
+      "group": "safety",
+      "node": "E0",
+      "when": "First first-aid step, briefly",
+      "src": [
+        "ERC2021",
+        "IFAM"
+      ],
+      "en": "First, stay safe. Ask someone to warn and slow down the traffic. Do not stand in the middle of the road.",
+      "hi": "पहले अपनी सुरक्षा देखिए। किसी से कहिए कि ट्रैफ़िक को धीमा करवाए। सड़क के बीच में मत खड़े होइए।",
+      "kn": "ಮೊದಲು ನೀವು ಸುರಕ್ಷಿತವಾಗಿರಿ. ವಾಹನಗಳನ್ನು ನಿಧಾನ ಮಾಡಿಸಲು ಯಾರಿಗಾದರೂ ಹೇಳಿ. ರಸ್ತೆಯ ಮಧ್ಯದಲ್ಲಿ ನಿಲ್ಲಬೇಡಿ."
+    },
+    {
+      "id": "SAFE2",
+      "group": "safety",
+      "node": "E0",
+      "when": "Bike engine running, fire or petrol smell reported",
+      "src": [
+        "IFAM"
+      ],
+      "en": "If the bike's engine is running, switch it off. If you see fire or smell petrol, move everyone back.",
+      "hi": "अगर बाइक का इंजन चालू है, तो उसे बंद कर दीजिए। अगर आग दिखे या पेट्रोल की गंध आए, तो सबको पीछे हटाइए।",
+      "kn": "ಬೈಕ್ ಎಂಜಿನ್ ಚಾಲೂ ಇದ್ದರೆ ಅದನ್ನು ಆಫ್ ಮಾಡಿ. ಬೆಂಕಿ ಕಂಡರೆ ಅಥವಾ ಪೆಟ್ರೋಲ್ ವಾಸನೆ ಬಂದರೆ, ಎಲ್ಲರನ್ನೂ ದೂರ ಸರಿಸಿ."
+    },
+    {
+      "id": "SAFE3",
+      "group": "safety",
+      "node": "E0",
+      "when": "Bystander wants to move him",
+      "src": [
+        "ERC2021",
+        "IFRC2020"
+      ],
+      "en": "Do not move him, unless he is in danger from fire or traffic.",
+      "hi": "जब तक आग या ट्रैफ़िक से ख़तरा न हो, इन्हें मत हिलाइए।",
+      "kn": "ಬೆಂಕಿ ಅಥವಾ ವಾಹನಗಳಿಂದ ಅಪಾಯ ಇಲ್ಲದಿದ್ದರೆ, ಅವರನ್ನು ಅಲ್ಲಿಂದ ಸರಿಸಬೇಡಿ."
+    },
+    {
+      "id": "PIN1",
+      "group": "safety",
+      "node": "E12",
+      "when": "Bike is lying on the rider",
+      "src": [
+        "IFAM"
+      ],
+      "en": "If the bike is lying on him, lift the bike off with help from others. Do not pull him out.",
+      "hi": "अगर बाइक इनके ऊपर गिरी है, तो दूसरों की मदद से बाइक उठाइए। इन्हें खींचकर मत निकालिए।",
+      "kn": "ಬೈಕ್ ಅವರ ಮೇಲೆ ಬಿದ್ದಿದ್ದರೆ, ಬೇರೆಯವರ ಸಹಾಯದಿಂದ ಬೈಕ್ ಎತ್ತಿ. ಅವರನ್ನು ಎಳೆಯಬೇಡಿ."
+    },
+    {
+      "id": "RESP1",
+      "group": "assess",
+      "node": "E1",
+      "when": "Responsiveness check",
+      "src": [
+        "ERC2021"
+      ],
+      "en": "Talk to him loudly and tap his shoulders. Do not shake him. Does he answer or open his eyes?",
+      "hi": "इनसे ज़ोर से बात कीजिए और कंधे थपथपाइए। इन्हें झकझोरिए मत। क्या ये जवाब देते हैं या आँखें खोलते हैं?",
+      "kn": "ಅವರ ಜೊತೆ ಜೋರಾಗಿ ಮಾತಾಡಿ, ಭುಜ ತಟ್ಟಿ. ಅವರನ್ನು ಅಲುಗಾಡಿಸಬೇಡಿ. ಅವರು ಉತ್ತರ ಕೊಡುತ್ತಾರಾ ಅಥವಾ ಕಣ್ಣು ತೆರೆಯುತ್ತಾರಾ?"
+    },
+    {
+      "id": "VISOR1",
+      "group": "assess",
+      "node": "E1",
+      "when": "Full-face helmet; before the breathing check",
+      "src": [
+        "IFAM"
+      ],
+      "en": "You can lift the helmet's visor to see his face. Do not take the helmet off.",
+      "hi": "चेहरा देखने के लिए आप हेलमेट का शीशा ऊपर कर सकते हैं। हेलमेट मत उतारिए।",
+      "kn": "ಮುಖ ಕಾಣಲು ಹೆಲ್ಮೆಟ್‌ನ ಗಾಜನ್ನು ಮೇಲೆತ್ತಬಹುದು. ಹೆಲ್ಮೆಟ್ ತೆಗೆಯಬೇಡಿ."
+    },
+    {
+      "id": "BREATH1",
+      "group": "assess",
+      "node": "E2",
+      "when": "Unresponsive",
+      "src": [
+        "ERC2021",
+        "AHA2020"
+      ],
+      "en": "Look at his chest for up to ten seconds. Is it rising and falling normally?",
+      "hi": "दस सेकंड तक इनकी छाती देखिए। क्या वह सामान्य रूप से ऊपर-नीचे हो रही है?",
+      "kn": "ಹತ್ತು ಸೆಕೆಂಡ್ ಅವರ ಎದೆಯನ್ನು ನೋಡಿ. ಅದು ಸಾಮಾನ್ಯವಾಗಿ ಮೇಲೆ ಕೆಳಗೆ ಆಗುತ್ತಿದೆಯಾ?"
+    },
+    {
+      "id": "BREATH2",
+      "group": "assess",
+      "node": "E2",
+      "when": "Bystander unsure, or describes gasping",
+      "src": [
+        "ERC2021",
+        "AHA2020"
+      ],
+      "en": "Gasping or very slow breaths are not normal breathing.",
+      "hi": "हाँफना या बहुत धीमी साँस लेना सामान्य साँस नहीं है।",
+      "kn": "ಏದುಸಿರು ಅಥವಾ ತುಂಬಾ ನಿಧಾನ ಉಸಿರು ಸಾಮಾನ್ಯ ಉಸಿರಾಟವಲ್ಲ."
+    },
+    {
+      "id": "CPR0",
+      "group": "cpr",
+      "node": "E3",
+      "when": "Not breathing normally AND lying face down or on his side",
+      "src": [
+        "ERC2021"
+      ],
+      "en": "He must be on his back on firm ground. With others, roll him over together, keeping his head, neck and body in a straight line.",
+      "hi": "इन्हें सख़्त ज़मीन पर पीठ के बल होना चाहिए। दूसरों के साथ मिलकर इन्हें पलटिए, सिर, गर्दन और शरीर एक सीध में रखिए।",
+      "kn": "ಅವರು ಗಟ್ಟಿ ನೆಲದ ಮೇಲೆ ಬೆನ್ನಿನ ಮೇಲೆ ಮಲಗಿರಬೇಕು. ಬೇರೆಯವರ ಜೊತೆ ಸೇರಿ, ತಲೆ, ಕುತ್ತಿಗೆ, ದೇಹ ನೇರವಾಗಿರುವಂತೆ ಅವರನ್ನು ತಿರುಗಿಸಿ."
+    },
+    {
+      "id": "CPR1",
+      "group": "cpr",
+      "node": "E3",
+      "when": "Not breathing normally; also triggers PRIORITY re-brief to 112",
+      "src": [
+        "ERC2021",
+        "AHA2020"
+      ],
+      "en": "Start chest pushes now. Kneel beside him. Put the heel of one hand on the centre of his chest, and your other hand on top.",
+      "hi": "अभी छाती दबाना शुरू कीजिए। इनके बगल में घुटनों पर बैठिए। एक हथेली का निचला हिस्सा छाती के बीच में रखिए, दूसरा हाथ उसके ऊपर।",
+      "kn": "ಈಗಲೇ ಎದೆ ಒತ್ತಲು ಶುರು ಮಾಡಿ. ಅವರ ಪಕ್ಕದಲ್ಲಿ ಮಂಡಿಯೂರಿ. ಒಂದು ಅಂಗೈಯ ಕೆಳಭಾಗವನ್ನು ಎದೆಯ ಮಧ್ಯದಲ್ಲಿ ಇಡಿ, ಇನ್ನೊಂದು ಕೈ ಅದರ ಮೇಲೆ."
+    },
+    {
+      "id": "CPR2",
+      "group": "cpr",
+      "node": "E3",
+      "when": "Directly after CPR1",
+      "src": [
+        "ERC2021",
+        "AHA2020"
+      ],
+      "en": "Keep your arms straight. Push down hard, about five centimetres, then let the chest come back up. Push fast, about two times every second.",
+      "hi": "हाथ सीधे रखिए। ज़ोर से लगभग पाँच सेंटीमीटर नीचे दबाइए, फिर छाती को ऊपर आने दीजिए। तेज़ी से दबाइए, हर सेकंड में लगभग दो बार।",
+      "kn": "ಕೈಗಳನ್ನು ನೇರವಾಗಿಡಿ. ಸುಮಾರು ಐದು ಸೆಂಟಿಮೀಟರ್ ಜೋರಾಗಿ ಒತ್ತಿ, ನಂತರ ಎದೆ ಮೇಲೆ ಬರಲು ಬಿಡಿ. ಸೆಕೆಂಡಿಗೆ ಸುಮಾರು ಎರಡು ಬಾರಿ ವೇಗವಾಗಿ ಒತ್ತಿ."
+    },
+    {
+      "id": "CPR3",
+      "group": "cpr",
+      "node": "E3",
+      "when": "Directly after CPR2; repeat every 2 minutes",
+      "src": [
+        "ERC2021",
+        "AHA2020"
+      ],
+      "en": "Do not stop until the ambulance team takes over, or he starts breathing normally. If someone else is there, swap every two minutes.",
+      "hi": "जब तक एम्बुलेंस टीम न संभाले या ये ठीक से साँस न लेने लगें, रुकिए मत। कोई और हो, तो हर दो मिनट में बदल लीजिए।",
+      "kn": "ಆಂಬ್ಯುಲೆನ್ಸ್ ತಂಡ ಬರುವವರೆಗೆ ಅಥವಾ ಅವರು ಸರಿಯಾಗಿ ಉಸಿರಾಡುವವರೆಗೆ ನಿಲ್ಲಿಸಬೇಡಿ. ಬೇರೆಯವರಿದ್ದರೆ ಎರಡು ನಿಮಿಷಕ್ಕೊಮ್ಮೆ ಬದಲಾಯಿಸಿ."
+    },
+    {
+      "id": "CPR4",
+      "group": "cpr",
+      "node": "E3",
+      "when": "Bystander asks about the helmet during CPR",
+      "src": [
+        "AHA2020",
+        "IFAM"
+      ],
+      "en": "Keep the helmet on. You do not need to remove it for chest pushes.",
+      "hi": "हेलमेट पहना रहने दीजिए। छाती दबाने के लिए उसे उतारने की ज़रूरत नहीं है।",
+      "kn": "ಹೆಲ್ಮೆಟ್ ಹಾಗೆಯೇ ಇರಲಿ. ಎದೆ ಒತ್ತಲು ಅದನ್ನು ತೆಗೆಯುವ ಅಗತ್ಯವಿಲ್ಲ."
+    },
+    {
+      "id": "BLEED1",
+      "group": "bleeding",
+      "node": "E4",
+      "when": "After breathing is confirmed, or for a conscious rider",
+      "src": [
+        "ERC2021"
+      ],
+      "en": "Is blood flowing heavily from anywhere?",
+      "hi": "क्या कहीं से बहुत ज़्यादा ख़ून बह रहा है?",
+      "kn": "ಎಲ್ಲಿಂದಾದರೂ ತುಂಬಾ ರಕ್ತ ಹರಿಯುತ್ತಿದೆಯಾ?"
+    },
+    {
+      "id": "BLEED2",
+      "group": "bleeding",
+      "node": "E4a",
+      "when": "Heavy bleeding reported",
+      "src": [
+        "ERC2021",
+        "IFRC2020",
+        "IFAM"
+      ],
+      "en": "Press hard on the wound with a clean cloth, like a handkerchief, dupatta or shirt. If there is no cloth, use your hand.",
+      "hi": "घाव पर किसी साफ़ कपड़े से ज़ोर से दबाइए, जैसे रूमाल, दुपट्टा या शर्ट। कपड़ा न हो तो हाथ से दबाइए।",
+      "kn": "ಗಾಯದ ಮೇಲೆ ಸ್ವಚ್ಛ ಬಟ್ಟೆಯಿಂದ ಜೋರಾಗಿ ಒತ್ತಿ, ಕರವಸ್ತ್ರ, ದುಪಟ್ಟಾ ಅಥವಾ ಶರ್ಟ್ ಆಗಬಹುದು. ಬಟ್ಟೆ ಇಲ್ಲದಿದ್ದರೆ ಕೈಯಿಂದ ಒತ್ತಿ."
+    },
+    {
+      "id": "BLEED3",
+      "group": "bleeding",
+      "node": "E4a",
+      "when": "Directly after BLEED2",
+      "src": [
+        "ERC2021",
+        "IFRC2020"
+      ],
+      "en": "Keep pressing hard without stopping. Do not lift the cloth to check. If blood soaks through, add more cloth on top and keep pressing.",
+      "hi": "बिना रुके ज़ोर से दबाते रहिए। देखने के लिए कपड़ा मत हटाइए। ख़ून बाहर आए, तो ऊपर और कपड़ा रखिए और दबाते रहिए।",
+      "kn": "ನಿಲ್ಲಿಸದೆ ಜೋರಾಗಿ ಒತ್ತುತ್ತಲೇ ಇರಿ. ನೋಡಲು ಬಟ್ಟೆ ತೆಗೆಯಬೇಡಿ. ರಕ್ತ ಹೊರಬಂದರೆ, ಮೇಲೆ ಇನ್ನಷ್ಟು ಬಟ್ಟೆ ಇಟ್ಟು ಒತ್ತುತ್ತಲೇ ಇರಿ."
+    },
+    {
+      "id": "BLEED4",
+      "group": "bleeding",
+      "node": "E4a",
+      "when": "Bleeding not stopping despite pressure; also PRIORITY to 112",
+      "src": [
+        "ERC2021"
+      ],
+      "en": "Keep pressing as hard as you can. I am telling the ambulance team this is urgent.",
+      "hi": "जितना हो सके उतना ज़ोर से दबाते रहिए। मैं एम्बुलेंस टीम को बता रही हूँ कि यह बहुत ज़रूरी है।",
+      "kn": "ಎಷ್ಟು ಸಾಧ್ಯವೋ ಅಷ್ಟು ಜೋರಾಗಿ ಒತ್ತುತ್ತಲೇ ಇರಿ. ಇದು ತುರ್ತು ಎಂದು ನಾನು ಆಂಬ್ಯುಲೆನ್ಸ್ ತಂಡಕ್ಕೆ ತಿಳಿಸುತ್ತಿದ್ದೇನೆ."
+    },
+    {
+      "id": "UNC1",
+      "group": "unconscious",
+      "node": "E5",
+      "when": "Unresponsive but breathing normally",
+      "src": [
+        "ERC2021",
+        "IFAM"
+      ],
+      "en": "He is breathing. Do not take off his helmet, and do not move his head or neck. Stay with him and keep watching his breathing.",
+      "hi": "ये साँस ले रहे हैं। हेलमेट मत उतारिए, और सिर या गर्दन मत हिलाइए। इनके पास रहिए और इनकी साँस पर नज़र रखिए।",
+      "kn": "ಅವರು ಉಸಿರಾಡುತ್ತಿದ್ದಾರೆ. ಹೆಲ್ಮೆಟ್ ತೆಗೆಯಬೇಡಿ, ತಲೆ ಅಥವಾ ಕುತ್ತಿಗೆ ಅಲ್ಲಾಡಿಸಬೇಡಿ. ಅವರ ಜೊತೆ ಇದ್ದು ಉಸಿರಾಟ ಗಮನಿಸುತ್ತಿರಿ."
+    },
+    {
+      "id": "UNC2",
+      "group": "unconscious",
+      "node": "E5",
+      "when": "Re-check every 2 minutes while unresponsive",
+      "src": [
+        "ERC2021"
+      ],
+      "en": "Is he still breathing normally?",
+      "hi": "क्या ये अब भी ठीक से साँस ले रहे हैं?",
+      "kn": "ಅವರು ಈಗಲೂ ಸರಿಯಾಗಿ ಉಸಿರಾಡುತ್ತಿದ್ದಾರಾ?"
+    },
+    {
+      "id": "VOMIT1",
+      "group": "unconscious",
+      "node": "E5a",
+      "when": "Vomiting or gurgling reported",
+      "src": [
+        "ERC2021",
+        "IFRC2020",
+        "IFAM"
+      ],
+      "en": "If he is vomiting or making gurgling sounds, turn him onto his side. Do it with two or three people.",
+      "hi": "अगर ये उल्टी कर रहे हैं या गले से गड़गड़ की आवाज़ आ रही है, तो इन्हें करवट पर कीजिए। दो-तीन लोग मिलकर कीजिए।",
+      "kn": "ಅವರು ವಾಂತಿ ಮಾಡುತ್ತಿದ್ದರೆ ಅಥವಾ ಗಂಟಲಿನಿಂದ ಗುರುಗುರು ಸದ್ದು ಬರುತ್ತಿದ್ದರೆ, ಎರಡು-ಮೂರು ಜನ ಸೇರಿ ಅವರನ್ನು ಒಂದು ಬದಿಗೆ ತಿರುಗಿಸಿ."
+    },
+    {
+      "id": "VOMIT2",
+      "group": "unconscious",
+      "node": "E5a",
+      "when": "Directly after VOMIT1",
+      "src": [
+        "ERC2021",
+        "IFAM"
+      ],
+      "en": "Keep his head, neck and body in one straight line as you turn him. Keep the helmet on.",
+      "hi": "पलटते समय सिर, गर्दन और शरीर एक सीध में रखिए। हेलमेट पहना रहने दीजिए।",
+      "kn": "ತಿರುಗಿಸುವಾಗ ತಲೆ, ಕುತ್ತಿಗೆ ಮತ್ತು ದೇಹ ಒಂದೇ ನೇರದಲ್ಲಿರಲಿ. ಹೆಲ್ಮೆಟ್ ತೆಗೆಯಬೇಡಿ."
+    },
+    {
+      "id": "RIDER_STILL",
+      "group": "conscious",
+      "node": "E6",
+      "when": "The rider himself reports a symptom (dizzy, headache, nausea, confusion, chest pain, can't move a limb)",
+      "src": [
+        "ERC2021",
+        "IFAM"
+      ],
+      "en": "Please stay lying down and keep still. Don't try to get up. Help is on the way, and I'm telling them how you feel.",
+      "hi": "कृपया लेटे रहिए और हिलिए मत। उठने की कोशिश मत कीजिए। मदद आ रही है, और मैं उन्हें बता रही हूँ कि आप कैसा महसूस कर रहे हैं।",
+      "kn": "ದಯವಿಟ್ಟು ಮಲಗಿಯೇ ಇರಿ, ಅಲುಗಾಡಬೇಡಿ. ಏಳಲು ಪ್ರಯತ್ನಿಸಬೇಡಿ. ಸಹಾಯ ಬರುತ್ತಿದೆ, ನಿಮಗೆ ಹೇಗನಿಸುತ್ತಿದೆ ಎಂದು ಅವರಿಗೆ ತಿಳಿಸುತ್ತಿದ್ದೇನೆ."
+    },
+    {
+      "id": "CONS1",
+      "group": "conscious",
+      "node": "E6",
+      "when": "Rider is responsive",
+      "src": [
+        "ERC2021",
+        "IFAM"
+      ],
+      "en": "Tell him to lie still and not to get up. Ask him not to move his head.",
+      "hi": "इनसे कहिए कि लेटे रहें और उठें नहीं। सिर न हिलाने को कहिए।",
+      "kn": "ಅಲುಗಾಡದೆ ಮಲಗಿರಲು, ಏಳದಿರಲು ಅವರಿಗೆ ಹೇಳಿ. ತಲೆ ಅಲ್ಲಾಡಿಸಬೇಡಿ ಎಂದು ಹೇಳಿ."
+    },
+    {
+      "id": "CONS2",
+      "group": "conscious",
+      "node": "E6",
+      "when": "Directly after CONS1",
+      "src": [
+        "ERC2021",
+        "IFAM"
+      ],
+      "en": "Do not give him anything to eat or drink. Cover him with a cloth to keep him warm, and keep talking to him.",
+      "hi": "इन्हें खाने-पीने को कुछ मत दीजिए। गर्म रखने के लिए कपड़े से ढक दीजिए, और इनसे बात करते रहिए।",
+      "kn": "ಅವರಿಗೆ ತಿನ್ನಲು ಅಥವಾ ಕುಡಿಯಲು ಏನೂ ಕೊಡಬೇಡಿ. ಬೆಚ್ಚಗಿರಲು ಬಟ್ಟೆ ಹೊದಿಸಿ, ಅವರ ಜೊತೆ ಮಾತಾಡುತ್ತಿರಿ."
+    },
+    {
+      "id": "CONS3",
+      "group": "conscious",
+      "node": "E6",
+      "when": "After CONS2; answer is recorded word for word",
+      "src": [],
+      "en": "Please ask him where it hurts.",
+      "hi": "कृपया इनसे पूछिए कि दर्द कहाँ हो रहा है।",
+      "kn": "ಎಲ್ಲಿ ನೋವಾಗುತ್ತಿದೆ ಎಂದು ದಯವಿಟ್ಟು ಅವರನ್ನು ಕೇಳಿ."
+    },
+    {
+      "id": "FRAC1",
+      "group": "injuries",
+      "node": "E7",
+      "when": "Limb looks bent or bone is visible",
+      "src": [
+        "ERC2021",
+        "IFAM"
+      ],
+      "en": "Do not try to straighten an injured arm or leg. Leave it as it is. Cover any open wound with a clean cloth.",
+      "hi": "चोट लगे हाथ या पैर को सीधा करने की कोशिश मत कीजिए। जैसा है वैसा रहने दीजिए। खुले घाव को साफ़ कपड़े से ढक दीजिए।",
+      "kn": "ಗಾಯಗೊಂಡ ಕೈ ಅಥವಾ ಕಾಲನ್ನು ನೇರ ಮಾಡಬೇಡಿ. ಹೇಗಿದೆಯೋ ಹಾಗೆಯೇ ಬಿಡಿ. ತೆರೆದ ಗಾಯವನ್ನು ಸ್ವಚ್ಛ ಬಟ್ಟೆಯಿಂದ ಮುಚ್ಚಿ."
+    },
+    {
+      "id": "OBJ1",
+      "group": "injuries",
+      "node": "E8",
+      "when": "Object stuck in the body",
+      "src": [
+        "IFAM",
+        "IFRC2020"
+      ],
+      "en": "Do not pull out anything stuck in the body. Press cloth around it, not on it.",
+      "hi": "शरीर में घुसी किसी चीज़ को बाहर मत खींचिए। उसके चारों ओर कपड़ा रखकर दबाइए, उसके ऊपर नहीं।",
+      "kn": "ದೇಹದೊಳಗೆ ಚುಚ್ಚಿರುವ ವಸ್ತುವನ್ನು ಹೊರಗೆ ಎಳೆಯಬೇಡಿ. ಅದರ ಸುತ್ತ ಬಟ್ಟೆ ಇಟ್ಟು ಒತ್ತಿ, ಅದರ ಮೇಲೆ ಅಲ್ಲ."
+    },
+    {
+      "id": "SEIZ1",
+      "group": "injuries",
+      "node": "E9",
+      "when": "Fitting or shaking reported",
+      "src": [
+        "ERC2021",
+        "IFAM"
+      ],
+      "en": "Do not hold him down. Do not put anything in his mouth or hand. Move hard things away, and tell me when the shaking stops.",
+      "hi": "इन्हें पकड़कर मत दबाइए। मुँह या हाथ में कुछ मत डालिए। सख़्त चीज़ें दूर हटाइए, और झटके रुकें तो मुझे बताइए।",
+      "kn": "ಅವರನ್ನು ಹಿಡಿದು ಒತ್ತಬೇಡಿ. ಬಾಯಿಗೆ ಅಥವಾ ಕೈಗೆ ಏನೂ ಕೊಡಬೇಡಿ. ಗಟ್ಟಿ ವಸ್ತುಗಳನ್ನು ದೂರ ಸರಿಸಿ, ನಡುಕ ನಿಂತಾಗ ಹೇಳಿ."
+    },
+    {
+      "id": "BURN1",
+      "group": "injuries",
+      "node": "E10",
+      "when": "Burn from exhaust or engine, and no higher-priority threat",
+      "src": [
+        "ERC2021",
+        "IFRC2020"
+      ],
+      "en": "Pour clean, cool water over the burn for twenty minutes. Do not put toothpaste, oil or ice on it.",
+      "hi": "जले हुए हिस्से पर बीस मिनट तक साफ़, ठंडा पानी डालिए। उस पर टूथपेस्ट, तेल या बर्फ़ मत लगाइए।",
+      "kn": "ಸುಟ್ಟ ಭಾಗದ ಮೇಲೆ ಇಪ್ಪತ್ತು ನಿಮಿಷ ಸ್ವಚ್ಛ, ತಣ್ಣೀರು ಸುರಿಯಿರಿ. ಟೂತ್‌ಪೇಸ್ಟ್, ಎಣ್ಣೆ ಅಥವಾ ಐಸ್ ಹಚ್ಚಬೇಡಿ."
+    },
+    {
+      "id": "MULTI1",
+      "group": "injuries",
+      "node": "E11",
+      "when": "More than one person hurt",
+      "src": [
+        "IFAM"
+      ],
+      "en": "How many people are hurt? Let's check each one, starting with anyone who is not talking.",
+      "hi": "कितने लोगों को चोट लगी है? हर एक को देखते हैं, पहले उन्हें जो बोल नहीं रहे।",
+      "kn": "ಎಷ್ಟು ಜನರಿಗೆ ಗಾಯವಾಗಿದೆ? ಪ್ರತಿಯೊಬ್ಬರನ್ನೂ ನೋಡೋಣ, ಮೊದಲು ಮಾತಾಡದೇ ಇರುವವರನ್ನು."
+    },
+    {
+      "id": "HELMET1",
+      "group": "donts",
+      "node": "E-HELMET",
+      "when": "Bystander wants to remove the helmet",
+      "src": [
+        "IFAM",
+        "IFRC2020"
+      ],
+      "en": "Please do not take off his helmet. It can hurt his neck. The ambulance team will remove it.",
+      "hi": "कृपया इनका हेलमेट मत उतारिए। इससे गर्दन को चोट लग सकती है। एम्बुलेंस टीम इसे उतारेगी।",
+      "kn": "ದಯವಿಟ್ಟು ಅವರ ಹೆಲ್ಮೆಟ್ ತೆಗೆಯಬೇಡಿ. ಅದರಿಂದ ಕುತ್ತಿಗೆಗೆ ಪೆಟ್ಟಾಗಬಹುದು. ಆಂಬ್ಯುಲೆನ್ಸ್ ತಂಡ ಅದನ್ನು ತೆಗೆಯುತ್ತದೆ."
+    },
+    {
+      "id": "WATER1",
+      "group": "donts",
+      "node": "E-WATER",
+      "when": "Bystander wants to give water, food, tea or medicine",
+      "src": [
+        "IFAM"
+      ],
+      "en": "Please do not give him water, food or medicine yet. The doctors will decide.",
+      "hi": "अभी इन्हें पानी, खाना या दवा मत दीजिए। डॉक्टर तय करेंगे।",
+      "kn": "ಈಗ ಅವರಿಗೆ ನೀರು, ಊಟ ಅಥವಾ ಔಷಧಿ ಕೊಡಬೇಡಿ. ವೈದ್ಯರು ನಿರ್ಧರಿಸುತ್ತಾರೆ."
+    },
+    {
+      "id": "TRANS1",
+      "group": "transport",
+      "node": "E-TRANSPORT",
+      "when": "Bystander wants to take him in a private vehicle (default answer)",
+      "src": [
+        "ERC2021",
+        "IFAM"
+      ],
+      "en": "Please wait for the ambulance. Moving him without support can hurt his neck and back.",
+      "hi": "कृपया एम्बुलेंस का इंतज़ार कीजिए। बिना सहारे के हिलाने से गर्दन और पीठ को चोट लग सकती है।",
+      "kn": "ದಯವಿಟ್ಟು ಆಂಬ್ಯುಲೆನ್ಸ್‌ಗಾಗಿ ಕಾಯಿರಿ. ಸರಿಯಾದ ಆಸರೆ ಇಲ್ಲದೆ ಸರಿಸಿದರೆ ಕುತ್ತಿಗೆ ಮತ್ತು ಬೆನ್ನಿಗೆ ಪೆಟ್ಟಾಗಬಹುದು."
+    },
+    {
+      "id": "TRANS2",
+      "group": "transport",
+      "node": "E-TRANSPORT",
+      "when": "ONLY after the 112 operator approves private transport",
+      "src": [
+        "IFAM"
+      ],
+      "requires": "operator_approval",
+      "en": "The ambulance team says to bring him. Use several people. Keep him lying flat, with his head, neck and body in a straight line.",
+      "hi": "एम्बुलेंस टीम ने इन्हें लाने को कहा है। कई लोग मिलकर उठाइए। इन्हें सीधा लिटाकर रखिए, सिर, गर्दन और शरीर एक सीध में।",
+      "kn": "ಅವರನ್ನು ಕರೆತರಲು ಆಂಬ್ಯುಲೆನ್ಸ್ ತಂಡ ಹೇಳಿದೆ. ಹಲವು ಜನ ಸೇರಿ ಎತ್ತಿ. ಅವರನ್ನು ನೇರವಾಗಿ ಮಲಗಿಸಿ, ತಲೆ, ಕುತ್ತಿಗೆ, ದೇಹ ಒಂದೇ ನೇರದಲ್ಲಿರಲಿ."
+    },
+    {
+      "id": "OFF1",
+      "group": "offline",
+      "node": "B9",
+      "when": "Offline loop (no data or agent unavailable), first clip",
+      "src": [],
+      "en": "This rider has had an accident, and my internet is not working. Please call 112 from your phone.",
+      "hi": "इस राइडर का एक्सीडेंट हुआ है, और मेरा इंटरनेट काम नहीं कर रहा। कृपया अपने फ़ोन से 112 पर कॉल कीजिए।",
+      "kn": "ಈ ಸವಾರರಿಗೆ ಅಪಘಾತವಾಗಿದೆ, ನನ್ನ ಇಂಟರ್ನೆಟ್ ಕೆಲಸ ಮಾಡುತ್ತಿಲ್ಲ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಫೋನಿನಿಂದ 112 ಗೆ ಕರೆ ಮಾಡಿ."
+    },
+    {
+      "id": "OFF2",
+      "group": "offline",
+      "node": "B9",
+      "when": "Offline loop, only after the SMS was actually sent",
+      "src": [],
+      "en": "I have sent his family a message with this location.",
+      "hi": "मैंने इनके परिवार को इस जगह की जानकारी के साथ मैसेज भेज दिया है।",
+      "kn": "ಈ ಸ್ಥಳದ ಮಾಹಿತಿಯೊಂದಿಗೆ ಅವರ ಕುಟುಂಬಕ್ಕೆ ಸಂದೇಶ ಕಳುಹಿಸಿದ್ದೇನೆ."
+    },
+    {
+      "id": "OFF3",
+      "group": "offline",
+      "node": "B9",
+      "when": "Offline loop (cannot ask questions, so it is conditional)",
+      "src": [
+        "ERC2021",
+        "AHA2020"
+      ],
+      "en": "If he is not breathing normally, push hard and fast on the centre of his chest until help arrives.",
+      "hi": "अगर ये ठीक से साँस नहीं ले रहे, तो मदद आने तक छाती के बीच में ज़ोर से और तेज़ी से दबाइए।",
+      "kn": "ಅವರು ಸರಿಯಾಗಿ ಉಸಿರಾಡುತ್ತಿಲ್ಲದಿದ್ದರೆ, ಸಹಾಯ ಬರುವವರೆಗೆ ಎದೆಯ ಮಧ್ಯದಲ್ಲಿ ಜೋರಾಗಿ, ವೇಗವಾಗಿ ಒತ್ತಿ."
+    },
+    {
+      "id": "OFF4",
+      "group": "offline",
+      "node": "B9",
+      "when": "Offline loop",
+      "src": [
+        "ERC2021"
+      ],
+      "en": "If he is bleeding heavily, press hard on the wound with a cloth and keep pressing.",
+      "hi": "अगर बहुत ख़ून बह रहा है, तो घाव पर कपड़े से ज़ोर से दबाइए और दबाते रहिए।",
+      "kn": "ತುಂಬಾ ರಕ್ತ ಹರಿಯುತ್ತಿದ್ದರೆ, ಗಾಯದ ಮೇಲೆ ಬಟ್ಟೆಯಿಂದ ಜೋರಾಗಿ ಒತ್ತಿ, ಒತ್ತುತ್ತಲೇ ಇರಿ."
+    }
   ],
-  "offline_loop": ["OFF1", "GS1", "HELMET1", "OFF3", "OFF4", "OFF2"]
+  "offline_loop": [
+    "OFF1",
+    "GS1",
+    "HELMET1",
+    "OFF3",
+    "OFF4",
+    "OFF2"
+  ]
 }

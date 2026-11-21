@@ -220,6 +220,13 @@ Every line below is spoken through Agora's `speak` API exactly as written. The L
 
 ## Conscious rider
 
+### `RIDER_STILL` · node E6
+*When:* The rider himself reports a symptom (dizzy, headache, nausea, confusion, chest pain, can't move a limb) · *Sources:* ERC2021, IFAM · *Size:* en 114 B · hi 307 B · kn 320 B
+
+- **en:** Please stay lying down and keep still. Don't try to get up. Help is on the way, and I'm telling them how you feel.
+- **hi:** कृपया लेटे रहिए और हिलिए मत। उठने की कोशिश मत कीजिए। मदद आ रही है, और मैं उन्हें बता रही हूँ कि आप कैसा महसूस कर रहे हैं।
+- **kn:** ದಯವಿಟ್ಟು ಮಲಗಿಯೇ ಇರಿ, ಅಲುಗಾಡಬೇಡಿ. ಏಳಲು ಪ್ರಯತ್ನಿಸಬೇಡಿ. ಸಹಾಯ ಬರುತ್ತಿದೆ, ನಿಮಗೆ ಹೇಗನಿಸುತ್ತಿದೆ ಎಂದು ಅವರಿಗೆ ತಿಳಿಸುತ್ತಿದ್ದೇನೆ.
+
 ### `CONS1` · node E6
 *When:* Rider is responsive · *Sources:* ERC2021, IFAM · *Size:* en 70 B · hi 150 B · kn 176 B
 

@@ -247,6 +247,13 @@ def condition_en() -> str:
         parts.append("He is breathing.")
     if facts_of("heavy_bleeding"):
         parts.append("He is bleeding heavily, and someone is pressing on the wound.")
+    symptoms = [k.replace("_", " ") for k in ("dizzy", "headache", "nausea", "confused", "chest_pain",
+                                               "cannot_move_limb", "breathing_difficulty") if facts_of(k)]
+    if symptoms:
+        parts.append(f"He reported: {', '.join(symptoms)}.")
+    pain = facts_of("pain_location")
+    if pain:
+        parts.append(f"He has pain in: {', '.join(f['detail'] or 'unspecified' for f in pain)}.")
     if INC.rider["status"] == "ok" and INC.state not in ("CANCEL_PENDING", "CANCELLED"):
         parts.append("He has said he is okay, but the ambulance team will check him.")
     return " ".join(parts) or "I don't know his condition yet."
@@ -539,6 +546,10 @@ def record_fact(kind: str, detail: str = "", speaker: str = "unknown") -> list[s
             spawn(say(amb[0], f"Priority update: {kind.replace('_', ' ')}{(', ' + detail) if detail else ''}.", priority="INTERRUPT"))
     if kind in P.FAMILY_FACTS:
         spawn(_relay_family(condition_en()))
+    if kind in P.AMBULANCE_FACTS and kind not in P.CRITICAL_FACTS:
+        for a in INC.by_role("ambulance"):
+            if a.status == "joined":
+                spawn(say(a, f"Update: {kind.replace('_', ' ')}{(', ' + detail) if detail else ''}."))
     return P.lines_for_fact(kind, INC.facts)
 
 
@@ -689,7 +700,7 @@ SCENE_STATE_HINTS = {
     "DETECTED": "Checking on the rider. Call log_rider_status with what he says (ok only if HE clearly says he is fine).",
     "RIDER_CHECK": "Checking on the rider. Call log_rider_status with what he says: ok if he says he is fine or okay in any form ('fine', 'okay', 'theek hoon'); pain, help, confusion or anything else is injured/help/unclear.",
     "CANCEL_PENDING": "The rider said he is fine; the alert cancels in a few seconds. If anyone asks for help, call log_rider_status with help.",
-    "BYSTANDER": "Help has been called. If the rider is talking, ask at most two questions (where does it hurt, can you breathe normally) and record answers with record_facts. Otherwise a bystander may answer the announcement.",
+    "BYSTANDER": "Help has been called. If the rider is talking: FIRST record every symptom or injury he mentions with record_facts (dizzy, headache, nausea, confused, chest_pain, breathing_difficulty, cannot_move_limb, pain_location with detail, heavy_bleeding...). Acknowledge what he said; never ignore it. Then ask ONE question not already answered in Recent conversation (where it hurts, can he breathe normally). Never repeat a question. Otherwise a bystander may answer the announcement.",
     "COORDINATE": "A bystander is helping. Put EVERY observation in their latest message into ONE record_facts call (e.g. breathing_normal AND heavy_bleeding). Ask open questions from STATUS and call answer_question. Whenever a hospital is named, ALWAYS call set_destination (also when answering a question). 'Ambulance is here' -> ambulance_arrived.",
     "HANDOVER": "The ambulance crew is here. If a paramedic or doctor asks about the patient, call read_handover. When they leave with him, call close_incident.",
     "CLOSED": "The incident is closed. Reply briefly.",

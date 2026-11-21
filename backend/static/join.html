@@ -6,12 +6,14 @@
 <title>Saathi call</title>
 <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
 <style>
-  body { font: 17px system-ui, sans-serif; margin: 0; padding: 28px 20px; text-align: center; background: #fff7f5; }
-  h1 { font-size: 24px; margin: 0 0 6px; }
+  body { font: 17px system-ui, sans-serif; margin: 0; padding: 28px 20px; text-align: center; background: #fff7f5; color: #111; }
+  h1 { font-size: 26px; margin: 0 0 4px; color: #c62828; }
   #who { color: #555; margin-bottom: 26px; }
   button { font-size: 20px; padding: 18px 28px; border-radius: 40px; border: 0; cursor: pointer; }
   #go { background: #1a7f37; color: #fff; } #end { background: #c62828; color: #fff; display: none; }
+  #mic { background: #0b57d0; color: #fff; display: none; margin-top: 14px; font-size: 16px; padding: 12px 20px; }
   #status { margin-top: 20px; color: #333; }
+  #help { display: none; margin: 18px auto 0; max-width: 360px; text-align: left; background: #fff3cd; border-radius: 12px; padding: 12px 14px; font-size: 15px; }
   .lvl { height: 10px; background: #eee; margin: 22px auto 0; max-width: 320px; border-radius: 5px; overflow: hidden; }
   .lvl div { height: 100%; width: 0; background: #1a7f37; }
 </style>
@@ -20,14 +22,40 @@
 <h1>Saathi</h1>
 <div id="who">Emergency call</div>
 <button id="go">Tap to join the call</button>
-<button id="end">End call</button>
+<button id="end">End call</button><br>
+<button id="mic">Turn on my microphone</button>
 <div id="status"></div>
+<div id="help">
+  <b>Microphone blocked.</b> You can still hear Saathi. To talk back:
+  <ol style="margin:8px 0 0 18px;padding:0">
+    <li>If this opened inside your SMS or WhatsApp app, tap <b>⋮ → Open in Chrome</b>.</li>
+    <li>Tap the lock icon next to the address → <b>Permissions → Microphone → Allow</b>.</li>
+    <li>Then tap <b>Turn on my microphone</b>.</li>
+  </ol>
+</div>
 <div class="lvl"><div id="lvl"></div></div>
 <script>
 const $ = id => document.getElementById(id);
 const sid = location.pathname.split('/').pop();
-let client, mic;
+let client, mic, reported = false;
 fetch('/api/s/' + sid).then(r => r.json()).then(i => { $('who').textContent = i.label ? `Saathi call · ${i.label}` : (i.detail || ''); });
+
+async function report() {  // tells the backend we are here, so Saathi starts the briefing
+  if (!reported) { reported = true; await fetch(`/api/s/${sid}/joined`, { method: 'POST' }); }
+}
+
+async function enableMic() {
+  try {
+    mic = await AgoraRTC.createMicrophoneAudioTrack({ AEC: true, ANS: true, AGC: true });
+    await client.publish([mic]);
+    $('help').style.display = 'none'; $('mic').style.display = 'none';
+    $('status').textContent = 'Connected. Saathi is speaking. You can talk and ask questions.';
+  } catch (e) {
+    // NotAllowedError: permission denied / in-app browser. Stay in the call listen-only.
+    $('help').style.display = 'block'; $('mic').style.display = 'inline-block';
+    $('status').textContent = 'Connected (listening only). ' + (e.name === 'NotAllowedError' ? '' : e.message);
+  }
+}
 
 $('go').onclick = async () => {
   $('go').disabled = true; $('status').textContent = 'Connecting…';
@@ -41,16 +69,15 @@ $('go').onclick = async () => {
       setInterval(() => { if (user.audioTrack) $('lvl').style.width = (user.audioTrack.getVolumeLevel() * 100) + '%'; }, 80);
     });
     await client.join(info.app_id, info.channel, info.token, info.uid);
-    mic = await AgoraRTC.createMicrophoneAudioTrack({ AEC: true, ANS: true, AGC: true });
-    await client.publish([mic]);
-    await fetch(`/api/s/${sid}/joined`, { method: 'POST' });
-    $('status').textContent = 'Connected. Saathi is speaking — you can talk and ask questions.';
     $('go').style.display = 'none'; $('end').style.display = 'inline-block';
+    await enableMic();
+    await report();
   } catch (e) { $('status').textContent = e.message; $('go').disabled = false; }
 };
+$('mic').onclick = enableMic;
 $('end').onclick = async () => {
   if (mic) mic.close(); if (client) await client.leave();
-  $('status').textContent = 'Call ended.'; $('end').style.display = 'none';
+  $('status').textContent = 'Call ended.'; $('end').style.display = 'none'; $('mic').style.display = 'none';
 };
 </script>
 </body>

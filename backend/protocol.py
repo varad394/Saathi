@@ -29,19 +29,31 @@ FACT_LINES = {
     "bike_on_top": ["PIN1"],
     "fire_or_fuel": ["SAFE2"],
     "in_traffic": ["SAFE1"],
+    # symptoms the rider reports himself (possible head injury / shock): keep still, help is coming
+    "dizzy": ["RIDER_STILL"],
+    "headache": ["RIDER_STILL"],
+    "nausea": ["RIDER_STILL"],
+    "confused": ["RIDER_STILL"],
+    "chest_pain": ["RIDER_STILL"],
+    "cannot_move_limb": ["RIDER_STILL"],
+    "breathing_difficulty": ["RIDER_STILL"],
 }
 FACT_KINDS = list(FACT_LINES) + ["face_down", "minor_bleeding", "pain_location", "rider_stopped_responding", "other"]
 
 # Order in which lines are spoken when one message reports several things (life threats first).
 FACT_PRIORITY = ["not_breathing", "gasping", "heavy_bleeding", "bleeding_not_stopping", "fire_or_fuel", "in_traffic",
-                 "vomiting", "unresponsive", "breathing_normal", "seizure", "responsive", "bike_on_top", "fracture",
+                 "vomiting", "unresponsive", "breathing_normal", "seizure", "chest_pain", "breathing_difficulty",
+                 "confused", "dizzy", "headache", "nausea", "cannot_move_limb", "responsive", "bike_on_top", "fracture",
                  "impaled_object", "multiple_casualties", "burn"]
 
 # Life threats: spoken with INTERRUPT, not interruptible, and re-briefed to 112 immediately.
 CRITICAL_FACTS = {"not_breathing", "gasping", "heavy_bleeding", "bleeding_not_stopping"}
 # Facts worth telling the family about.
 FAMILY_FACTS = {"unresponsive", "responsive", "not_breathing", "breathing_normal", "heavy_bleeding",
-                "rider_stopped_responding", "multiple_casualties"}
+                "rider_stopped_responding", "multiple_casualties", "dizzy", "headache", "confused", "chest_pain",
+                "cannot_move_limb", "breathing_difficulty", "pain_location"}
+# Symptoms the 112 operator should hear about straight away (not life-threat lines, but medically important).
+AMBULANCE_FACTS = FAMILY_FACTS
 
 # Lines the LLM may request directly with say_line (requests and reassurance, not assessments).
 SAYABLE = ["GS1", "HELMET1", "WATER1", "TRANS1", "SAFE1", "SAFE3", "CPR4", "BREATH2", "CONS3", "UNC2", "ASK112", "HOLD"]
