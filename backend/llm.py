@@ -17,6 +17,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
 import config as C
+import intent
 import llmclient
 import tools
 import workflow as W
@@ -68,8 +69,11 @@ async def chat_completions(sid: str, req: Request):
     t0 = time.perf_counter()
     turn = {"lines": [], "critical": False, "say": None, "spoken": False}
     text, provider = "", "-"
+    if s.role == "scene" and inc.state in ("IMPACT", "DETECTED", "RIDER_CHECK") and intent.rider_says_fine(last_user):
+        turn["say"] = W.rider_status("ok", last_user).get("_say")  # C1: deterministic cancel, no LLM round
+        provider = "intent"
     try:
-        for _ in range(MAX_ROUNDS):
+        for _ in range(0 if turn["say"] else MAX_ROUNDS):
             text, calls, provider = await llmclient.complete(messages, tool_defs, role=s.role, max_tokens=400)
             if not calls:
                 break

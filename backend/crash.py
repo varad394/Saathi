@@ -53,8 +53,10 @@ async def cancel(body: CancelIn):
 
 
 @router.post("/crash/simulate")
-async def simulate(peak_g: float = 4.0):
-    res = await impact(ImpactIn(peak_g=peak_g))
+async def simulate(peak_g: float = 4.0, asr: str | None = None):
+    if not C.PUBLIC_BASE_URL:
+        raise HTTPException(400, "PUBLIC_BASE_URL is empty: start the tunnel and set it in .env")
+    res = await W.on_impact(peak_g, asr_vendor=asr if asr in ("sarvam", "ares") else None)
     await W.on_confirmed(peak_g, 110.0, 0.05)
     return res
 

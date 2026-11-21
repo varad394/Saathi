@@ -36,6 +36,8 @@ VOICE_BY_LANG = {
 }
 
 SARVAM_API_KEY = _req("SARVAM_API_KEY")
+ASR_VENDOR = os.getenv("ASR_VENDOR", "sarvam").strip()  # sarvam (auto language detection) | ares (Agora built-in)
+ARES_SCENE_LANGS = os.getenv("ARES_SCENE_LANGS", "en-IN,hi-IN,kn-IN").strip()
 
 LLM_BASE_URL = _req("LLM_BASE_URL").rstrip("/")
 LLM_API_KEY = _req("LLM_API_KEY")

@@ -33,6 +33,7 @@ def rtc_token(channel: str, uid: int) -> str:
 
 def join_payload(*, name: str, channel: str, agent_uid: int, user_uid: int, llm_url: str, system_prompt: str,
                  greeting: str, voice: str, locale: str, asr_lang: str = "unknown", idle_timeout: int = 120,
+                 asr_vendor: str = "sarvam",
                  failure_message: str = "Please wait, help is being arranged.") -> dict:
     return {
         "name": name,
@@ -42,12 +43,7 @@ def join_payload(*, name: str, channel: str, agent_uid: int, user_uid: int, llm_
             "agent_rtc_uid": str(agent_uid),
             "remote_rtc_uids": [str(user_uid)],
             "idle_timeout": idle_timeout,
-            "asr": {
-                "vendor": "sarvam",
-                "language": "en-IN" if asr_lang == "unknown" else asr_lang,
-                # "unknown" = Sarvam automatic language detection (scene); a fixed code for family / 112
-                "params": {"api_key": C.SARVAM_API_KEY, "language": asr_lang},
-            },
+            "asr": asr_block(asr_vendor, asr_lang),
             "llm": {
                 "url": llm_url,
                 "api_key": C.CUSTOM_LLM_SHARED_KEY,
@@ -67,11 +63,20 @@ def join_payload(*, name: str, channel: str, agent_uid: int, user_uid: int, llm_
     }
 
 
+def asr_block(vendor: str, lang: str) -> dict:
+    if vendor == "ares":  # Agora's built-in ASR: no vendor key; several languages as one comma-separated string
+        return {"vendor": "ares", "language": C.ARES_SCENE_LANGS if lang == "unknown" else lang}
+    # Sarvam: "unknown" = automatic language detection (scene); a fixed code for family / 112
+    return {"vendor": "sarvam", "language": "en-IN" if lang == "unknown" else lang,
+            "params": {"api_key": C.SARVAM_API_KEY, "language": lang}}
+
+
 def _redact(p: dict) -> dict:
     q = copy.deepcopy(p)
     pr = q["properties"]
     pr["token"] = "<redacted>"
-    pr["asr"]["params"]["api_key"] = "<redacted>"
+    if "params" in pr["asr"]:
+        pr["asr"]["params"]["api_key"] = "<redacted>"
     pr["llm"]["api_key"] = "<redacted>"
     pr["tts"]["params"]["api_key"] = "<redacted>"
     pr["llm"]["system_messages"] = "<prompt>"

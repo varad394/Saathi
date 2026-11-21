@@ -100,6 +100,7 @@ class Incident:
     summary: str | None = None
     tasks: list = field(default_factory=list)
     rider_check_deadline: float | None = None
+    asr_vendor: str = C.ASR_VENDOR
 
     def t(self) -> float:
         return round(time.time() - self.created, 1)
@@ -169,7 +170,7 @@ async def start_session(s: Session) -> bool:
         res = await agora.join(name=f"saathi-{INC.id}-{s.role}-{s.contact_id or 'x'}-{int(time.time())}",
                                channel=s.channel, agent_uid=s.agent_uid, user_uid=s.user_uid, llm_url=llm_url(s.sid),
                                system_prompt=s.system_prompt, greeting=s.greeting, voice=s.voice, locale=s.locale,
-                               asr_lang=s.asr_lang, idle_timeout=180)
+                               asr_lang=s.asr_lang, idle_timeout=180, asr_vendor=INC.asr_vendor)
         s.agent_id, s.status = res.get("agent_id"), "running"
         ev("session_started", sid=s.sid, role=s.role, agent_id=s.agent_id)
         return True
@@ -301,18 +302,19 @@ async def stop_all(inc: Incident) -> None:
             s.status = "stopped"
 
 
-async def on_impact(peak_g: float, lat: float | None = None, lon: float | None = None, speed_kmh: float | None = None) -> dict:
+async def on_impact(peak_g: float, lat: float | None = None, lon: float | None = None, speed_kmh: float | None = None,
+                    asr_vendor: str | None = None) -> dict:
     """Phone sensed an impact: create the incident and pre-warm the scene agent (hides ~2 s start time)."""
     global INC
     if INC:
         await stop_all(INC)  # also cancels its timers, so they can never touch the new incident
-    INC = Incident(peak_g=peak_g)
+    INC = Incident(peak_g=peak_g, asr_vendor=asr_vendor or C.ASR_VENDOR)
     INC.location = {"text": PROFILE["demo_location"]["text"],
                     "lat": lat if lat is not None else PROFILE["demo_location"]["lat"],
                     "lon": lon if lon is not None else PROFILE["demo_location"]["lon"]}
     INC.rider_lang = RIDER["rider_check_languages"][0]
     INC.scene_lang = INC.rider_lang
-    ev("impact", peak_g=round(peak_g, 2), speed_kmh=speed_kmh)
+    ev("impact", peak_g=round(peak_g, 2), speed_kmh=speed_kmh, asr=INC.asr_vendor)
     scene = Session(sid=f"{INC.id}-scene", role="scene", label="Rider and bystanders", lang=INC.scene_lang,
                     voice=C.MURF_VOICE_ID, locale="en-IN", asr_lang="unknown", channel=f"saathi-{INC.id}",
                     system_prompt=SCENE_PROMPT, greeting=GREETING_SCENE)
@@ -683,7 +685,7 @@ SCENE_PROMPT = """You are Saathi, the voice of an injured two-wheeler rider's ph
 SCENE_STATE_HINTS = {
     "IMPACT": "Checking on the rider. Call log_rider_status with what he says (ok only if HE clearly says he is fine).",
     "DETECTED": "Checking on the rider. Call log_rider_status with what he says (ok only if HE clearly says he is fine).",
-    "RIDER_CHECK": "Checking on the rider. Call log_rider_status with what he says: ok only if HE clearly says he is fine in the first person; pain, help, confusion or anything else is injured/help/unclear.",
+    "RIDER_CHECK": "Checking on the rider. Call log_rider_status with what he says: ok if he says he is fine or okay in any form ('fine', 'okay', 'theek hoon'); pain, help, confusion or anything else is injured/help/unclear.",
     "CANCEL_PENDING": "The rider said he is fine; the alert cancels in a few seconds. If anyone asks for help, call log_rider_status with help.",
     "BYSTANDER": "Help has been called. If the rider is talking, ask at most two questions (where does it hurt, can you breathe normally) and record answers with record_facts. Otherwise a bystander may answer the announcement.",
     "COORDINATE": "A bystander is helping. Put EVERY observation in their latest message into ONE record_facts call (e.g. breathing_normal AND heavy_bleeding). Ask open questions from STATUS and call answer_question. Whenever a hospital is named, ALWAYS call set_destination (also when answering a question). 'Ambulance is here' -> ambulance_arrived.",

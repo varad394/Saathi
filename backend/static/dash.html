@@ -34,6 +34,7 @@
   <button id="close">Close incident</button>
   <button id="stopAll">Stop all agents</button>
   <span>Mic: <select id="micsel"></select></span>
+  <span>Speech-to-text: <select id="asrsel"><option value="sarvam">Sarvam (auto language)</option><option value="ares">Agora ARES (en/hi/kn)</option></select></span>
   <span id="rtc" style="font-size:13px;color:#ffd54f">not connected</span>
 </header>
 <main>
@@ -85,7 +86,11 @@ async function joinAsPhone(info) {
     setInterval(() => { if (user.audioTrack) $('agentlvl').style.width = (user.audioTrack.getVolumeLevel() * 100) + '%'; }, 80);
   });
   await client.join(info.app_id, info.channel, info.token, info.uid);
-  mic = await AgoraRTC.createMicrophoneAudioTrack({ AEC: true, ANS: true, AGC: true, microphoneId: $('micsel').value || undefined });
+  // Headsets: no echo to cancel, and noise suppression clips soft word onsets -> turn both off, keep gain control.
+  const label = ($('micsel').selectedOptions[0] || {}).text || '';
+  const headset = /hands-?free|headset|buds|airpods|bluetooth|earphone/i.test(label);
+  mic = await AgoraRTC.createMicrophoneAudioTrack({ AEC: !headset, ANS: !headset, AGC: true,
+                                                     microphoneId: $('micsel').value || undefined });
   setInterval(() => { if (mic) $('miclvl').style.width = (mic.getVolumeLevel() * 100) + '%'; }, 80);
   await client.publish([mic]);
   rtc(`joined; mic: ${mic.getTrackLabel()}`);
@@ -97,7 +102,7 @@ async function leave() {
   if (client) { await client.leave(); client = null; }
 }
 
-$('sim').onclick = async () => { try { const s = await post('/crash/simulate'); await joinAsPhone(s); } catch (e) { rtc('ERROR: ' + e.message, true); alert(e.message); } };
+$('sim').onclick = async () => { try { const s = await post('/crash/simulate?asr=' + $('asrsel').value); await joinAsPhone(s); } catch (e) { rtc('ERROR: ' + e.message, true); alert(e.message); } };
 $('joinScene').onclick = async () => {
   try { const inc = await (await fetch('/incident')).json(); const sc = (inc.sessions || []).find(s => s.role === 'scene');
         if (!sc) return alert('No incident yet'); await joinAsPhone({ ...(await (await fetch('/api/s/' + sc.sid)).json()), sid: sc.sid }); }
