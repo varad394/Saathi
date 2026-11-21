@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Saathi incident dashboard</title>
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+<style>
+  :root { --ok:#1a7f37; --warn:#b26b00; --bad:#c62828; --mute:#666; }
+  body { font: 14px system-ui, sans-serif; margin: 0; background: #f6f7f9; color: #111; }
+  header { display:flex; gap:12px; align-items:center; padding:12px 18px; background:#111; color:#fff; flex-wrap:wrap; }
+  header h1 { font-size:18px; margin:0 12px 0 0; }
+  button { font-size:14px; padding:8px 12px; cursor:pointer; border-radius:6px; border:1px solid #ccc; background:#fff; }
+  button.primary { background:#c62828; color:#fff; border-color:#c62828; }
+  select { font-size:13px; max-width:260px; }
+  main { display:grid; grid-template-columns: 1.1fr 1fr 1fr; gap:14px; padding:14px 18px; }
+  section { background:#fff; border:1px solid #e3e5e8; border-radius:8px; padding:12px 14px; }
+  h2 { font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:#555; margin:0 0 8px; }
+  #state { font-size:28px; font-weight:700; }
+  .pill { display:inline-block; padding:2px 8px; border-radius:10px; font-size:12px; background:#eee; margin-left:6px; }
+  .ok { color:var(--ok); } .warn { color:var(--warn); } .bad { color:var(--bad); } .mute { color:var(--mute); }
+  ul { margin:0; padding-left:18px; } li { margin:3px 0; }
+  #timeline { font: 12px/1.45 ui-monospace, monospace; max-height: 520px; overflow:auto; white-space:pre-wrap; }
+  .lvl { height:8px; background:#eee; margin:4px 0 8px; } .lvl div { height:100%; width:0; background:#2a7; }
+  a { color:#0b57d0; word-break: break-all; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Saathi · incident</h1>
+  <button class="primary" id="sim">Simulate crash + join as rider's phone</button>
+  <button id="joinScene">Join scene as phone</button>
+  <button id="leave">Leave</button>
+  <button id="close">Close incident</button>
+  <button id="stopAll">Stop all agents</button>
+  <span>Mic: <select id="micsel"></select></span>
+</header>
+<main>
+  <section>
+    <h2>State</h2>
+    <div id="state">—</div>
+    <div id="countdown" class="warn"></div>
+    <div class="mute" id="meta"></div>
+    <div style="margin-top:10px">My mic</div><div class="lvl"><div id="miclvl" style="background:#27a"></div></div>
+    <div>Saathi voice</div><div class="lvl"><div id="agentlvl"></div></div>
+    <h2 style="margin-top:14px">Actions (what is actually done)</h2><ul id="actions"></ul>
+    <h2 style="margin-top:14px">Calls (open the link on another phone)</h2><ul id="sessions"></ul>
+  </section>
+  <section>
+    <h2>Rider</h2><ul id="rider"></ul>
+    <h2 style="margin-top:14px">Facts reported at the scene</h2><ul id="facts"></ul>
+    <h2 style="margin-top:14px">Questions relayed between calls</h2><ul id="questions"></ul>
+    <h2 style="margin-top:14px">Destination / ETA</h2><div id="dest" class="mute">—</div>
+    <h2 style="margin-top:14px">Follow-up summary</h2><div id="summary" class="mute">—</div>
+  </section>
+  <section>
+    <h2>Timeline</h2><div id="timeline"></div>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+let client, mic;
+const esc = s => String(s ?? '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+async function post(path) {
+  const r = await fetch(path, { method: 'POST' });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(`${path} ${r.status} ${JSON.stringify(j)}`);
+  return j;
+}
+
+async function joinAsPhone(info) {
+  if (client) await leave();
+  client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+  client.on('user-published', async (user, type) => {
+    if (type !== 'audio') return;
+    await client.subscribe(user, 'audio');
+    user.audioTrack.play();
+    setInterval(() => { if (user.audioTrack) $('agentlvl').style.width = (user.audioTrack.getVolumeLevel() * 100) + '%'; }, 80);
+  });
+  await client.join(info.app_id, info.channel, info.token, info.uid);
+  mic = await AgoraRTC.createMicrophoneAudioTrack({ AEC: true, ANS: true, AGC: true, microphoneId: $('micsel').value || undefined });
+  setInterval(() => { if (mic) $('miclvl').style.width = (mic.getVolumeLevel() * 100) + '%'; }, 80);
+  await client.publish([mic]);
+}
+
+async function leave() {
+  if (mic) { mic.close(); mic = null; }
+  if (client) { await client.leave(); client = null; }
+}
+
+$('sim').onclick = async () => { try { const s = await post('/crash/simulate'); await joinAsPhone(s); } catch (e) { alert(e.message); } };
+$('joinScene').onclick = async () => {
+  try { const inc = await (await fetch('/incident')).json(); const sc = (inc.sessions || []).find(s => s.role === 'scene');
+        if (!sc) return alert('No incident yet'); await joinAsPhone(await (await fetch('/api/s/' + sc.sid)).json()); }
+  catch (e) { alert(e.message); } };
+$('leave').onclick = leave;
+$('close').onclick = () => post('/incident/close').catch(e => alert(e.message));
+$('stopAll').onclick = async () => { await post('/incident/stop'); await leave(); };
+(async () => { try { const ms = await AgoraRTC.getMicrophones();
+  $('micsel').innerHTML = ms.map(m => `<option value="${m.deviceId}">${esc(m.label || m.deviceId)}</option>`).join(''); } catch (e) {} })();
+
+const stCls = s => ({ CLOSED:'ok', CANCELLED:'ok', HANDOVER:'ok', COORDINATE:'warn', BYSTANDER:'bad', RIDER_CHECK:'warn', CANCEL_PENDING:'warn' }[s] || '');
+async function refresh() {
+  let inc;
+  try { inc = await (await fetch('/incident')).json(); } catch (e) { return; }
+  if (inc.state === 'NONE') { $('state').textContent = 'No incident'; return; }
+  $('state').innerHTML = `<span class="${stCls(inc.state)}">${inc.state}</span>`;
+  $('countdown').textContent = inc.rider_check_left != null ? `Escalating in ${inc.rider_check_left.toFixed(0)} s unless the rider says he is fine` : '';
+  $('meta').textContent = `Incident ${inc.id} · crash ${inc.created} · +${inc.t}s · impact ${inc.peak_g} g · bystander language ${inc.scene_lang}`;
+  $('actions').innerHTML = Object.entries(inc.actions).map(([n, a]) =>
+    `<li><b>${esc(n)}</b>: <span class="${['briefed','reached','sent'].includes(a.status) ? 'ok' : a.status === 'failed' ? 'bad' : 'warn'}">${esc(a.status)}</span> <span class="mute">${esc(a.t)} ${esc(a.detail)}</span></li>`).join('') || '<li class="mute">none yet</li>';
+  $('sessions').innerHTML = inc.sessions.map(s => `<li><b>${esc(s.label)}</b> <span class="pill">${esc(s.status)}</span> <span class="mute">${esc(s.voice)}</span>`
+    + (s.link ? `<br><a href="${location.origin}${s.link}" target="_blank">${location.origin}${s.link}</a>` : '') + '</li>').join('');
+  $('rider').innerHTML = `<li>Status: <b>${esc(inc.rider.status || 'unknown')}</b></li>` + inc.rider.words.map(w => `<li>${esc(w.clock)} "${esc(w.text)}"</li>`).join('');
+  $('facts').innerHTML = inc.facts.map(f => `<li>${esc(f.clock)} <b>${esc(f.kind)}</b> ${esc(f.detail)} <span class="mute">(${esc(f.speaker)})</span></li>`).join('') || '<li class="mute">none</li>';
+  $('questions').innerHTML = inc.questions.map(q => `<li>${esc(q.from_label)}: ${esc(q.question)} → <b>${esc(q.answer || '…')}</b></li>`).join('') || '<li class="mute">none</li>';
+  $('dest').textContent = `${inc.destination || 'unknown'} · ETA ${inc.eta_min ? inc.eta_min + ' min' : 'unknown'}`;
+  $('summary').textContent = inc.summary || '—';
+  $('timeline').innerHTML = inc.timeline.slice().reverse().map(e => {
+    const { t, clock, kind, ...rest } = e;
+    return `<div><span class="mute">+${t}s</span> <b>${esc(kind)}</b> ${esc(JSON.stringify(rest))}</div>`; }).join('');
+}
+setInterval(refresh, 1000); refresh();
+</script>
+</body>
+</html>

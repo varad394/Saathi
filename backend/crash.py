@@ -1,20 +1,19 @@
-"""Crash lifecycle events from the phone. Detection runs entirely on the phone;
-no sensor data comes here, only these three events.
+"""Crash lifecycle + incident API. Detection runs on the phone; only these events come here.
 
-  impact     -> POST /crash/impact     -> pre-warm the ConvoAI agent (hides ~2 s agent start)
-  confirmed  -> POST /crash/confirmed  -> phone joins the channel, agent greets
-  cancelled  -> POST /crash/cancel     -> stop the pre-warmed agent
+  POST /crash/impact     -> pre-warm the scene agent (returns what the phone needs to join)
+  POST /crash/confirmed  -> DETECTED -> RIDER_CHECK (20 s timer starts)
+  POST /crash/cancel     -> detector false alarm before confirmation
+  POST /crash/simulate   -> impact + confirmed in one call (testing without the phone's sensors)
 """
-import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 import agora
-import tools
+import config as C
+import workflow as W
 
-log = logging.getLogger("crash")
-router = APIRouter(prefix="/crash")
+router = APIRouter()
 
 
 class ImpactIn(BaseModel):
@@ -24,38 +23,84 @@ class ImpactIn(BaseModel):
     speed_kmh: float | None = None
 
 
-@router.post("/impact")
-async def impact(body: ImpactIn):
-    from main import start_agent  # late import: main imports this module
-
-    tools.SESSION["location"] = {"lat": body.lat, "lon": body.lon}
-    return await start_agent(reason="impact", peak_g=body.peak_g, speed_kmh=body.speed_kmh)
-
-
 class ConfirmIn(BaseModel):
     peak_g: float
     angle_deg: float
     still_std_g: float
 
 
-@router.post("/confirmed")
-def confirmed(body: ConfirmIn):
-    tools.event("crash_confirmed", **body.model_dump())
-    return {"ok": True}
-
-
 class CancelIn(BaseModel):
     reason: str
 
 
-@router.post("/cancel")
+@router.post("/crash/impact")
+async def impact(body: ImpactIn):
+    if not C.PUBLIC_BASE_URL:
+        raise HTTPException(400, "PUBLIC_BASE_URL is empty: start the tunnel and set it in .env")
+    return await W.on_impact(body.peak_g, body.lat, body.lon, body.speed_kmh)
+
+
+@router.post("/crash/confirmed")
+async def confirmed(body: ConfirmIn):
+    await W.on_confirmed(body.peak_g, body.angle_deg, body.still_std_g)
+    return {"ok": True, "state": W.INC.state if W.INC else None}
+
+
+@router.post("/crash/cancel")
 async def cancel(body: CancelIn):
-    tools.event("detector_cancelled", reason=body.reason)
-    aid = tools.SESSION.get("agent_id")
-    if aid:
-        try:
-            await agora.leave(aid)
-        except Exception:
-            log.exception("leave failed")
-        tools.SESSION["agent_id"] = None
+    await W.on_detector_cancel(body.reason)
+    return {"ok": True}
+
+
+@router.post("/crash/simulate")
+async def simulate(peak_g: float = 4.0):
+    res = await impact(ImpactIn(peak_g=peak_g))
+    await W.on_confirmed(peak_g, 110.0, 0.05)
+    return res
+
+
+# ---------------------------------------------------------------- incident (dashboard, follow-up)
+@router.get("/incident")
+def incident():
+    return W.INC.public() if W.INC else {"state": "NONE"}
+
+
+@router.post("/incident/close")
+async def close():
+    if not W.INC:
+        raise HTTPException(409, "no incident")
+    W.spawn(W.close_incident("closed from the dashboard"))
+    return {"ok": True}
+
+
+@router.post("/incident/stop")
+async def stop():
+    if W.INC:
+        await W.stop_all(W.INC)
+        if W.INC.state not in ("CLOSED", "CANCELLED"):
+            W.set_state("CLOSED", "stopped from the dashboard")
+    return {"ok": True}
+
+
+# ---------------------------------------------------------------- join links for family / 112 (F8, F1)
+def _session(sid: str):
+    s = W.INC.sessions.get(sid) if W.INC else None
+    if not s:
+        raise HTTPException(404, "This Saathi call has ended.")
+    return s
+
+
+@router.get("/api/s/{sid}")
+async def session_join_info(sid: str):
+    s = _session(sid)
+    if s.role != "scene" and W.INC.state not in ("CLOSED", "CANCELLED"):
+        await W.ensure_running(s)
+    return {"app_id": C.AGORA_APP_ID, "channel": s.channel, "uid": s.user_uid, "token": agora.rtc_token(s.channel, s.user_uid),
+            "label": s.label, "role": s.role, "lang": s.lang, "state": W.INC.state}
+
+
+@router.post("/api/s/{sid}/joined")
+async def session_joined(sid: str):
+    _session(sid)
+    W.spawn(W.on_joined(sid))
     return {"ok": True}

@@ -40,6 +40,8 @@ SARVAM_API_KEY = _req("SARVAM_API_KEY")
 LLM_BASE_URL = _req("LLM_BASE_URL").rstrip("/")
 LLM_API_KEY = _req("LLM_API_KEY")
 LLM_MODEL = _req("LLM_MODEL")
+LLM_FAST_MODEL = os.getenv("LLM_FAST_MODEL", "openai/gpt-oss-20b").strip()  # family/112/translation; own rate limit
+SARVAM_LLM_MODEL = os.getenv("SARVAM_LLM_MODEL", "sarvam-105b").strip()      # last-resort fallback
 
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "").strip().rstrip("/")
 CUSTOM_LLM_SHARED_KEY = _req("CUSTOM_LLM_SHARED_KEY")

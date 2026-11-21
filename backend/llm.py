@@ -1,110 +1,111 @@
-"""OpenAI-compatible /chat/completions endpoint that Agora ConvoAI calls.
+"""OpenAI-compatible /llm/{sid}/chat/completions that Agora ConvoAI calls, one URL per agent session.
 
-Pattern from Agora's recipe-agent-tool-calling: the tool loop runs here, server-side,
-and only final spoken text is streamed back to Agora as SSE. Reasoning tokens from
-gpt-oss (delta.reasoning) are never forwarded, so they can't be spoken.
+Per turn:
+  1. Compact context: the role's system prompt + live STATUS (incident facts and the last few exchanges) +
+     ONLY the latest message. The model never re-handles old turns, and each call stays small (rate limits).
+  2. Tool loop with only the tools the current state allows (runs here, server-side).
+  3. Reviewed protocol lines from a tool are spoken word for word via the speak API and the model's own text is
+     dropped; a fixed line from a tool (rider check) is streamed back verbatim.
 """
 import json
 import logging
+import re
 import time
 import uuid
 
-import httpx
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
 import config as C
-from tools import TOOLS, event, run_tool
+import llmclient
+import tools
+import workflow as W
 
 log = logging.getLogger("llm")
 router = APIRouter()
-_http = httpx.AsyncClient(timeout=httpx.Timeout(30, connect=5),
-                          headers={"Authorization": f"Bearer {C.LLM_API_KEY}"})
 
 MAX_ROUNDS = 3
 FALLBACK = "Please wait, help is being arranged."
-_KEEP = {"role", "content", "tool_calls", "tool_call_id", "name"}
+FALLBACK_BY_ROLE = {"ambulance": "Noted. I am checking with the people at the scene.",
+                    "family": "मी त्यांच्याकडून माहिती घेत आहे, कृपया थांबा."}
+_EMOJI = re.compile("[\U0001F000-\U0001FAFF☀-➿️‍]")
 
 
-def _sanitize(messages: list[dict]) -> list[dict]:
-    out = []
-    for m in messages:
-        m = {k: v for k, v in m.items() if k in _KEEP}
-        if m.get("role") in ("system", "user", "assistant", "tool"):
-            out.append(m)
-    return out
+def _clean(text: str) -> str:
+    """Spoken text only: drop emoji / markdown symbols, normalise odd spaces, keep it on one line."""
+    text = _EMOJI.sub("", text).replace(" ", " ").replace(" ", " ")
+    text = re.sub(r"[*_#`>]+", "", text)
+    return re.sub(r"\s*\n+\s*", " ", text).strip()
 
 
 def _chunk(cid: str, content: str | None = None, finish: str | None = None) -> str:
     delta = {"content": content} if content is not None else {}
-    return "data: " + json.dumps({
-        "id": cid, "object": "chat.completion.chunk", "created": int(time.time()), "model": C.LLM_MODEL,
-        "choices": [{"index": 0, "delta": delta, "finish_reason": finish}],
-    }, ensure_ascii=False) + "\n\n"
+    return "data: " + json.dumps({"id": cid, "object": "chat.completion.chunk", "created": int(time.time()),
+                                  "model": C.LLM_MODEL, "choices": [{"index": 0, "delta": delta, "finish_reason": finish}]},
+                                 ensure_ascii=False) + "\n\n"
 
 
-@router.post("/chat/completions")
-async def chat_completions(req: Request):
+@router.post("/{sid}/chat/completions")
+async def chat_completions(sid: str, req: Request):
     if req.headers.get("authorization", "") != f"Bearer {C.CUSTOM_LLM_SHARED_KEY}":
         raise HTTPException(401, "bad key")
+    inc = W.INC
+    s = inc.sessions.get(sid) if inc else None
+    if s is None:
+        raise HTTPException(404, "unknown or finished session")
     body = await req.json()
-    messages = _sanitize(body.get("messages", []))
-    last_user = next((m.get("content") for m in reversed(messages) if m.get("role") == "user"), None)
-    log.info("ASR heard: %r", last_user)
-    if last_user:
-        event("heard", text=last_user)
+    msgs = body.get("messages", [])
+    last_user = next((m.get("content") for m in reversed(msgs) if m.get("role") == "user"), "") or ""
+    if isinstance(last_user, list):  # content parts
+        last_user = " ".join(p.get("text", "") for p in last_user if isinstance(p, dict))
+    engaged = W.on_utterance(s, last_user) if last_user else False
+
+    messages = [{"role": "system", "content": s.system_prompt or W.SCENE_PROMPT},
+                {"role": "system", "content": "STATUS:\n" + W.status_for(s)},
+                {"role": "user", "content": last_user or "(silence)"}]
+    tool_defs = tools.allowed(s)
+
+    t0 = time.perf_counter()
+    turn = {"lines": [], "critical": False, "say": None, "spoken": False}
+    text, provider = "", "-"
+    try:
+        for _ in range(MAX_ROUNDS):
+            text, calls, provider = await llmclient.complete(messages, tool_defs, role=s.role, max_tokens=400)
+            if not calls:
+                break
+            messages.append({"role": "assistant", "content": text or None, "tool_calls": [
+                {"id": c["id"], "type": "function", "function": {"name": c["name"], "arguments": c["args"]}} for c in calls]})
+            for c in calls:
+                result = await tools.run(s, c["name"], c["args"], turn)
+                log.info("TOOL [%s] %s(%s) -> %s", s.role, c["name"], c["args"], result)
+                messages.append({"role": "tool", "tool_call_id": c["id"], "content": result})
+            text = ""
+            if turn["say"] or turn["lines"] or turn["spoken"]:
+                break
+    except Exception:
+        log.exception("llm turn failed")
+
+    out, lines = None, []
+    if engaged:  # D5: Good Samaritan right after the first bystander reply, then assessment
+        lines = (turn["lines"] + ["GS1"]) if turn["critical"] else (["GS1"] + (turn["lines"] or ["RESP1"]))
+    elif turn["say"]:
+        out = turn["say"]
+    elif turn["lines"]:
+        lines = turn["lines"]
+    elif not turn["spoken"]:
+        out = _clean(text)
+        if not out or out.lstrip().startswith(("{", "[")):  # a model echoing a tool result: never speak JSON
+            out = (FAMILY_WAIT.get(s.lang, FAMILY_WAIT["en"]) if s.role == "family"
+                   else FALLBACK_BY_ROLE.get(s.role, FALLBACK))
+    if lines:
+        W.spawn(W.say_lines(list(dict.fromkeys(lines)), critical=turn["critical"]))
+    log.info("TURN [%s] via %s heard=%r -> %s (%.0f ms)", s.role, provider, last_user,
+             f"say {out!r}" if out else f"lines {lines}" if lines else "spoken by tool", (time.perf_counter() - t0) * 1000)
 
     async def gen():
         cid = "chatcmpl-" + uuid.uuid4().hex[:12]
-        t0 = time.perf_counter()
-        first_token_ms = None
-        spoken = ""
-        try:
-            for rnd in range(MAX_ROUNDS):
-                payload = {"model": C.LLM_MODEL, "messages": messages, "tools": TOOLS, "tool_choice": "auto",
-                           "stream": True, "max_tokens": 300, "reasoning_effort": "low"}
-                calls: dict[int, dict] = {}
-                text = ""
-                async with _http.stream("POST", f"{C.LLM_BASE_URL}/chat/completions", json=payload) as r:
-                    if r.status_code != 200:
-                        log.error("upstream %s: %s", r.status_code, (await r.aread())[:300])
-                        break
-                    async for line in r.aiter_lines():
-                        if not line.startswith("data:") or line.strip() == "data: [DONE]":
-                            continue
-                        choices = json.loads(line[5:]).get("choices") or []
-                        if not choices:
-                            continue
-                        delta = choices[0].get("delta") or {}
-                        if delta.get("content"):
-                            if first_token_ms is None:
-                                first_token_ms = (time.perf_counter() - t0) * 1000
-                            text += delta["content"]
-                            yield _chunk(cid, delta["content"])
-                        for tc in delta.get("tool_calls") or []:
-                            c = calls.setdefault(tc.get("index", 0), {"id": "", "name": "", "args": ""})
-                            c["id"] = tc.get("id") or c["id"]
-                            f = tc.get("function") or {}
-                            c["name"] += f.get("name") or ""
-                            c["args"] += f.get("arguments") or ""
-                spoken += text
-                if not calls:
-                    break
-                messages.append({"role": "assistant", "content": text or None, "tool_calls": [
-                    {"id": c["id"], "type": "function", "function": {"name": c["name"], "arguments": c["args"]}}
-                    for c in calls.values()]})
-                for c in calls.values():
-                    result = run_tool(c["name"], c["args"])
-                    log.info("TOOL %s(%s) -> %s [round %d]", c["name"], c["args"], result, rnd)
-                    messages.append({"role": "tool", "tool_call_id": c["id"], "content": result})
-        except Exception:
-            log.exception("llm loop failed")
-        if not spoken.strip():
-            spoken = FALLBACK
-            yield _chunk(cid, FALLBACK)
-        log.info("SAID %r (first token %s ms, total %.0f ms)", spoken,
-                 f"{first_token_ms:.0f}" if first_token_ms else "-", (time.perf_counter() - t0) * 1000)
-        event("said", text=spoken)
+        if out:
+            yield _chunk(cid, out)
         yield _chunk(cid, finish="stop")
         yield "data: [DONE]\n\n"
 

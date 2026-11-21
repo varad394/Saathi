@@ -1,0 +1,22 @@
+{
+  "_note": "Demo profile. In the product this comes from the phone's setup screen and is sent only at impact (emergency mode). Phone numbers never reach the LLM or any spoken line.",
+  "rider": {
+    "name": "Rahul",
+    "age": 28,
+    "sex": "male",
+    "blood_group": "B positive",
+    "allergies": "penicillin",
+    "conditions": "none known",
+    "medicines": "none",
+    "mother_tongue": "mr",
+    "languages": ["mr", "hi", "en"],
+    "rider_check_languages": ["hi", "en"],
+    "home_state": "Karnataka",
+    "local_language": "kn"
+  },
+  "contacts": [
+    {"id": "mom", "name": "Sunita", "relation": "mother", "language": "mr", "priority": 1, "phone": "+910000000000"}
+  ],
+  "consent": {"share_medical_in_emergency": true, "consented_at": "2026-11-20"},
+  "demo_location": {"text": "Outer Ring Road, near Marathahalli bridge, Bengaluru", "lat": 12.9569, "lon": 77.7011}
+}
