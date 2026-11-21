@@ -1,0 +1,7 @@
+{
+  "_note": "Copy to profile.local.json (git-ignored) and fill in REAL numbers for the demo. Values here override profile.json. Numbers are used only by the phone to send the SMS; they never reach the LLM or any spoken line.",
+  "contacts": [
+    {"id": "mom", "name": "Sunita", "relation": "mother", "language": "mr", "priority": 1, "phone": "+91XXXXXXXXXX"}
+  ],
+  "demo_roles": {"ambulance_112_phone": "+91XXXXXXXXXX"}
+}

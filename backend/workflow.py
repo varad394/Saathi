@@ -20,7 +20,10 @@ import lang as L
 import protocol as P
 
 log = logging.getLogger("workflow")
-PROFILE = json.loads((pathlib.Path(__file__).parent / "data" / "profile.json").read_text(encoding="utf-8"))
+_DATA = pathlib.Path(__file__).parent / "data"
+PROFILE = json.loads((_DATA / "profile.json").read_text(encoding="utf-8"))
+if (_DATA / "profile.local.json").exists():  # real demo numbers, git-ignored
+    PROFILE |= {k: v for k, v in json.loads((_DATA / "profile.local.json").read_text(encoding="utf-8")).items() if not k.startswith("_")}
 RIDER = PROFILE["rider"]
 
 # Timers (scenario_tree.md section 2)

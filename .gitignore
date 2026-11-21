@@ -24,3 +24,4 @@ android/local.properties
 # Local key notes
 api.txt
 *.key
+backend/data/profile.local.json
