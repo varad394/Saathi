@@ -40,9 +40,10 @@ DEFAULTS = {
     "listen_after_cancel_s": 60,
     "rider_silent_s": 15,
     "announce_every_s": 35,
+    "checkin_after_s": 25,                 # silence at the scene before Saathi asks "are you still with him?"
 }
 LIMITS = {"playback_gain": (0, 400), "mic_gain": (0, 400), "ains_mode": (0, 2), "speech_threshold": (0.1, 0.95), "silence_ms": (300, 2000), "rider_check_s": (5, 120), "greeting_s": (0, 30),
-          "cancel_undo_s": (3, 60), "listen_after_cancel_s": (5, 600), "rider_silent_s": (5, 120), "announce_every_s": (10, 300)}
+          "cancel_undo_s": (3, 60), "listen_after_cancel_s": (5, 600), "rider_silent_s": (5, 120), "announce_every_s": (10, 300), "checkin_after_s": (10, 180)}
 
 _cur = dict(DEFAULTS)
 

@@ -44,6 +44,9 @@ RIDER_LINES = {
                      "hi": "मैं अभी आपके परिवार और एम्बुलेंस को बुला रही हूँ। कृपया हिलिए मत। दर्द कहाँ हो रहा है?"},
     "still_here": {"en": "Okay. Help is still on the way; the ambulance team will check you.",
                    "hi": "ठीक है। मदद आ रही है, एम्बुलेंस टीम आपको देखेगी।"},
+    "checkin": {"en": "Are you still with him? Please tell me what you see.",
+                "hi": "क्या आप अभी भी इनके पास हैं? कृपया बताइए आप क्या देख रहे हैं।",
+                "kn": "ನೀವು ಇನ್ನೂ ಅವರ ಜೊತೆ ಇದ್ದೀರಾ? ದಯವಿಟ್ಟು ಏನು ಕಾಣುತ್ತಿದೆ ಎಂದು ಹೇಳಿ."},
     # a bystander cannot cancel for the rider (C7); a bystander reporting injury escalates
     "bystander_no_cancel": {"en": "Thank you. Unless he tells me himself that he is fine, I will still call for help.",
                             "hi": "धन्यवाद। जब तक वो खुद नहीं कहते कि वो ठीक हैं, मैं मदद बुलाऊँगी।",
@@ -101,6 +104,8 @@ class Incident:
     timeline: list = field(default_factory=list)
     spoken: dict = field(default_factory=dict)  # line id -> last spoken time
     last_heard: float = 0.0
+    last_spoke: float = 0.0
+    checkins: int = 0
     lang_candidate: str | None = None
     summary: str | None = None
     tasks: list = field(default_factory=list)
@@ -203,6 +208,8 @@ async def say(s: Session | None, text: str, priority: str = "APPEND", interrupta
     try:
         await agora.speak(s.agent_id, text, priority, interruptable)
         ev("spoke", sid=s.sid, text=text)
+        if s.role == "scene":  # rough end-of-speech estimate: ~14 characters per second
+            INC.last_spoke = max(INC.last_spoke, time.time() + len(text) / 14)
     except Exception as e:
         ev("speak_failed", sid=s.sid, error=str(e)[:200])
 
@@ -411,14 +418,47 @@ async def _bystander_watch(rider_talking: bool) -> None:
         if INC.state != "BYSTANDER":
             return
         record_fact("rider_stopped_responding", f"no answer for {S.get('rider_silent_s')} s", "system")
-    n = 0
-    while INC.state == "BYSTANDER" and "engaged" not in INC.flags and n < ANNOUNCE_MAX:
-        INC.flags.add("announced")
+    spawn(_silence_watch())
+    await _announce_loop()
+
+
+async def _announce_loop() -> None:
+    """D1/D9: announce on the loudspeaker in the local language, Hindi and English until someone answers."""
+    inc, n = INC, 0
+    while INC is inc and inc.state == "BYSTANDER" and "engaged" not in inc.flags:
+        inc.flags.add("announced")
         for lg in dict.fromkeys([RIDER["local_language"], "hi", "en"]):
-            await say(INC.scene(), P.text("AN1", lg if lg in P.LINE_LANGS else "en"))
-        ev("announced", n=n + 1)
+            await say(inc.scene(), P.text("AN1", lg if lg in P.LINE_LANGS else "en"))
         n += 1
+        ev("announced", n=n)
         await asyncio.sleep(S.get('announce_every_s'))
+
+
+async def _silence_watch() -> None:
+    """If the scene goes quiet after a bystander answered: check in twice, then assume nobody is with him,
+    tell family / 112, and go back to announcing for help."""
+    inc = INC
+    while INC is inc and inc.state in ("BYSTANDER", "COORDINATE"):
+        await asyncio.sleep(2)
+        if inc.state != "COORDINATE" or "engaged" not in inc.flags:
+            continue
+        quiet = time.time() - max(inc.last_heard, inc.last_spoke)
+        if quiet < S.get('checkin_after_s'):
+            continue
+        if inc.checkins < 2:
+            inc.checkins += 1
+            lg = inc.scene_lang if inc.scene_lang in ("en", "hi", "kn") else "en"
+            ev("checkin", n=inc.checkins)
+            await say(inc.scene(), RIDER_LINES["checkin"][lg])
+            continue
+        inc.flags.discard("engaged")
+        inc.checkins = 0
+        set_state("BYSTANDER", "nobody answered the check-ins")
+        record_fact("other", "no one answering at the scene", "system")
+        await _relay_family(f"Right now nobody is answering near {RIDER['name']}. I am calling out for help on his phone's loudspeaker.")
+        for a in inc.by_role("ambulance"):
+            await say(a, "Update: nobody is answering at the scene right now. Saathi is announcing for help on the loudspeaker.")
+        spawn(_announce_loop())
 
 
 async def _recheck_loop() -> None:  # E5: unconscious but breathing -> ask every 2 min
@@ -479,6 +519,8 @@ async def on_joined(sid: str) -> None:
 def on_utterance(s: Session, text: str) -> bool:
     """Every user turn. Returns True if this turn is the first bystander reply (engagement)."""
     INC.last_heard = time.time()
+    if s.role == "scene":
+        INC.checkins = 0
     ev("heard", sid=s.sid, text=text)
     if s.role == "ambulance" and INC.eta_min is None:
         m = re.search(r"(\d{1,2})\s*(?:min|minute)", text.lower())
