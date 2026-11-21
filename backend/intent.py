@@ -1,37 +1,35 @@
-"""Fast, deterministic rider-check intent: is this the rider saying he's fine? (en / hi / kn / mr)
-
-Used before the LLM during RIDER_CHECK, so a clipped "Fine" or "theek hoon" cancels reliably and instantly.
-Anything mentioning pain, help, blood or a negation is never treated as fine.
+"""Fast-path shortcuts for the two most time-critical rider answers. Deliberately NARROW: only short, unambiguous,
+first-person or bare phrases ("I'm fine", "ok", "help", "मदद"). Anything longer, negated, or about someone else
+("he is fine", "don't call for help") goes to the LLM, which understands context, negation and who is speaking.
 """
 import re
 
-_OK = [r"\bfine\b", r"\bok(ay)?\b", r"\ball ?right\b", r"\bi'?m good\b", r"\bno problem\b", r"\bnothing happened\b",
-       r"\b(theek|thik)\b", r"ठीक", r"बढ़िया", r"बरा आहे", r"ಚೆನ್ನಾಗಿದ್ದ", r"ಪರವಾಗಿಲ್ಲ", r"ಸರಿ ಇದ್ದ", r"ಆರಾಮ"]
-_DANGER = [r"\bnot\b", r"\bno\b(?! problem)", r"n'?t\b", r"\bhelp", r"\bpain", r"\bhurt", r"\bblood", r"\bbleed",
-           r"\bdard\b", r"\bmadad\b", r"\bnahi", r"दर्द", r"मदद", r"नहीं", r"नही", r"खून", r"ನೋವು", r"ಸಹಾಯ", r"ರಕ್ತ",
-           r"ಆಗ್ತಿಲ್ಲ", r"ಇಲ್ಲ(?!ವ)(?<!ಪರವಾಗಿಲ್ಲ)", r"नाही", r"वेदना"]
+MAX_WORDS = 4
+_THIRD = [r"\b(he|she|him|his|her|they|them)\b", r"\b(wo|woh|vo|uska|usko|unka|unko)\b", r"वो", r"वह", r"उस", r"उन",
+          r"ಅವನು", r"ಅವಳು", r"ಅವರು", r"ಅವನಿಗೆ", r"ಅವರಿಗೆ", r"तो\b", r"त्याला", r"ती\b"]
+_NEG = [r"\bnot?\b", r"n'?t\b", r"\bnever\b", r"\bmat\b", r"\bnahi", r"मत", r"नहीं", r"नही", r"ಬೇಡ", r"ಇಲ್ಲ", r"नको", r"नाही"]
+_OK = [r"\bfine\b", r"\bok(ay)?\b", r"\ball ?right\b", r"\bi'?m good\b", r"\b(theek|thik)\b", r"ठीक", r"बरा",
+       r"ಚೆನ್ನಾಗಿದ್ದ", r"ಪರವಾಗಿಲ್ಲ", r"ಆರಾಮ"]
+_HELP = [r"\bhelp\b", r"\bbachao\b", r"\bmadad\b", r"मदद", r"बचाओ", r"ಸಹಾಯ", r"ಕಾಪಾಡಿ", r"मदत"]
+
+
+def _short(t: str) -> bool:
+    return 0 < len(t.split()) <= MAX_WORDS
+
+
+def _any(pats, t) -> bool:
+    return any(re.search(p, t) for p in pats)
 
 
 def rider_says_fine(text: str) -> bool:
-    t = (text or "").lower().strip()
-    if not t or len(t.split()) > 8:  # long answers go to the LLM
+    t = (text or "").lower().strip(" .!?")
+    if not _short(t) or _any(_THIRD, t) or _any(_HELP, t):
         return False
-    if any(re.search(p, t) for p in _DANGER):
+    if _any(_NEG, t) and not re.search(r"ಪರವಾಗಿಲ್ಲ", t):  # "ಪರವಾಗಿಲ್ಲ" (no problem) contains a negation but means fine
         return False
-    return any(re.search(p, t) for p in _OK)
-
-
-_HELP = [r"\bhelp", r"\bpain", r"\bhurt", r"\bblood", r"\bbleed", r"\bambulance", r"can'?t breathe", r"\bnot (fine|ok|okay|good)",
-         r"\bmadad\b", r"\bdard\b", r"मदद", r"दर्द", r"खून", r"ठीक नहीं", r"साँस नहीं", r"बचाओ",
-         r"ಸಹಾಯ", r"ನೋವು", r"ರಕ್ತ", r"ಕಾಪಾಡಿ", r"मदत", r"वेदना", r"बरा नाही"]
-
-
-_NO_HELP = [r"(don'?t|do not|no|not)\s+(need\s+)?(any\s+)?help", r"\bno need\b", r"मदद नहीं", r"मदद की ज़?रूरत नहीं",
-            r"ಸಹಾಯ ಬೇಡ", r"ಬೇಡ", r"मदत नको"]
+    return _any(_OK, t)
 
 
 def rider_needs_help(text: str) -> bool:
-    t = (text or "").lower()
-    if any(re.search(p, t) for p in _NO_HELP):
-        return False  # "I don't need help" must never escalate; the LLM handles anything ambiguous
-    return any(re.search(p, t) for p in _HELP)
+    t = (text or "").lower().strip(" .!?")
+    return _short(t) and _any(_HELP, t) and not _any(_NEG, t) and not _any(_THIRD, t)

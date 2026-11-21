@@ -533,6 +533,9 @@ class MainActivity : Activity(), SensorEventListener, CrashDetector.Listener {
         val mode = serverSettings.optInt("ains_mode", 1)
         val rc0 = e.setAINSMode(ains, mode)
         log("AI noise suppression ${if (ains) "on, mode $mode" else "off"} (rc=$rc0)")
+        // Loud roads: boost Saathi's voice on the loudspeaker; mic level adjustable (settings playback_gain / mic_gain)
+        e.adjustPlaybackSignalVolume(serverSettings.optInt("playback_gain", 300))
+        e.adjustRecordingSignalVolume(serverSettings.optInt("mic_gain", 100))
         val rc = e.joinChannel(token, channel, uid, ChannelMediaOptions().apply {
             clientRoleType = Constants.CLIENT_ROLE_BROADCASTER
             channelProfile = Constants.CHANNEL_PROFILE_COMMUNICATION

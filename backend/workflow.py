@@ -43,6 +43,13 @@ RIDER_LINES = {
                      "hi": "मैं अभी आपके परिवार और एम्बुलेंस को बुला रही हूँ। कृपया हिलिए मत। दर्द कहाँ हो रहा है?"},
     "still_here": {"en": "Okay. Help is still on the way; the ambulance team will check you.",
                    "hi": "ठीक है। मदद आ रही है, एम्बुलेंस टीम आपको देखेगी।"},
+    # a bystander cannot cancel for the rider (C7); a bystander reporting injury escalates
+    "bystander_no_cancel": {"en": "Thank you. Unless he tells me himself that he is fine, I will still call for help.",
+                            "hi": "धन्यवाद। जब तक वो खुद नहीं कहते कि वो ठीक हैं, मैं मदद बुलाऊँगी।",
+                            "kn": "ಧನ್ಯವಾದ. ಅವರೇ ತಾವು ಚೆನ್ನಾಗಿದ್ದೇನೆ ಎಂದು ಹೇಳದಿದ್ದರೆ, ನಾನು ಸಹಾಯಕ್ಕೆ ಕರೆ ಮಾಡುತ್ತೇನೆ."},
+    "bystander_escalate": {"en": "Thank you. I am calling his family and an ambulance now. Please stay with him.",
+                           "hi": "धन्यवाद। मैं अभी इनके परिवार और एम्बुलेंस को बुला रही हूँ। कृपया इनके पास रहिए।",
+                           "kn": "ಧನ್ಯವಾದ. ನಾನು ಈಗಲೇ ಅವರ ಕುಟುಂಬ ಮತ್ತು ಆಂಬ್ಯುಲೆನ್ಸ್‌ಗೆ ಕರೆ ಮಾಡುತ್ತಿದ್ದೇನೆ. ದಯವಿಟ್ಟು ಅವರ ಜೊತೆ ಇರಿ."},
 }
 GREETING_SCENE = ("साथी बोल रही हूँ। आप ठीक हैं? ठीक नहीं बोला, तो मैं मदद बुला लूँगी। "
                   "Saathi here. Are you okay? Say I'm fine, or I'll call your family and an ambulance.")
@@ -251,6 +258,9 @@ def condition_en() -> str:
                                                "cannot_move_limb", "breathing_difficulty") if facts_of(k)]
     if symptoms:
         parts.append(f"He reported: {', '.join(symptoms)}.")
+    other = [f["detail"] for f in facts_of("symptom") if f.get("detail")]
+    if other:
+        parts.append(f"He also said: {'; '.join(other)}.")
     pain = facts_of("pain_location")
     if pain:
         parts.append(f"He has pain in: {', '.join(f['detail'] or 'unspecified' for f in pain)}.")
@@ -488,7 +498,19 @@ def on_utterance(s: Session, text: str) -> bool:
     return False
 
 
-def rider_status(status: str, words: str) -> dict:
+def rider_status(status: str, words: str, speaker: str = "rider") -> dict:
+    if speaker == "bystander":  # C7: only the rider can cancel; a bystander's report is a fact, not consent
+        d = L.detect(words)
+        lg = d if d in ("en", "hi", "kn") else (INC.scene_lang if INC.scene_lang in ("en", "hi", "kn") else "en")
+        ev("bystander_says", status=status, words=words)
+        if status == "ok":
+            INC.facts.append({"kind": "responsive" if "fine" in words.lower() else "other", "detail": f"bystander: {words}",
+                              "speaker": "bystander", "clock": INC.clock(), "ts": time.time()})
+            return {"_say": RIDER_LINES["bystander_no_cancel"][lg]} if INC.state in ("RIDER_CHECK", "CANCEL_PENDING") else {"recorded": True}
+        if INC.state in ("IMPACT", "DETECTED", "RIDER_CHECK", "CANCEL_PENDING", "CANCELLED"):
+            spawn(escalate(f"bystander: {words or status}", rider_talking=False))
+            return {"_say": RIDER_LINES["bystander_escalate"][lg]}
+        return {"recorded": True}
     INC.rider["status"] = status
     INC.rider["last_answer_at"] = INC.clock()
     if words:
@@ -525,6 +547,9 @@ def record_facts(facts: list[dict], speaker: str) -> tuple[list[str], bool]:
             continue  # already known; don't repeat instructions
         kinds.add(k)
         ids += record_fact(k, f.get("detail", ""), speaker)
+    if kinds - {"other"} and INC.state in ("IMPACT", "DETECTED", "RIDER_CHECK", "CANCEL_PENDING", "CANCELLED"):
+        # any real injury or symptom reported before escalation means help is needed now
+        spawn(escalate(f"{speaker} reported: {', '.join(sorted(kinds))}", rider_talking=speaker == "rider"))
     known = {x["kind"] for x in INC.facts}
     if known & {"heavy_bleeding", "minor_bleeding", "bleeding_not_stopping"}:
         ids = [i for i in ids if i != "BLEED1"]  # don't ask about bleeding we already know about
@@ -698,7 +723,7 @@ SCENE_PROMPT = """You are Saathi, the voice of an injured two-wheeler rider's ph
 SCENE_STATE_HINTS = {
     "IMPACT": "Checking on the rider. Call log_rider_status with what he says (ok only if HE clearly says he is fine).",
     "DETECTED": "Checking on the rider. Call log_rider_status with what he says (ok only if HE clearly says he is fine).",
-    "RIDER_CHECK": "Checking on the rider. Call log_rider_status with what he says: ok if he says he is fine or okay in any form ('fine', 'okay', 'theek hoon'); pain, help, confusion or anything else is injured/help/unclear.",
+    "RIDER_CHECK": "Checking on the rider. Call log_rider_status. First decide WHO is speaking (rider = about himself in first person; bystander = about him in third person). status=ok if the rider says he is fine, okay, doesn't need help, or asks you not to call anyone (watch for negation: 'don't call for help' means ok). Pain, symptoms, asking for help or confusion = injured/help/unclear. Also record any symptom with record_facts.",
     "CANCEL_PENDING": "The rider said he is fine; the alert cancels in a few seconds. If anyone asks for help, call log_rider_status with help.",
     "BYSTANDER": "Help has been called. If the rider is talking: FIRST record every symptom or injury he mentions with record_facts (dizzy, headache, nausea, confused, chest_pain, breathing_difficulty, cannot_move_limb, pain_location with detail, heavy_bleeding...). Acknowledge what he said; never ignore it. Then ask ONE question not already answered in Recent conversation (where it hurts, can he breathe normally). Never repeat a question. Otherwise a bystander may answer the announcement.",
     "COORDINATE": "A bystander is helping. Put EVERY observation in their latest message into ONE record_facts call (e.g. breathing_normal AND heavy_bleeding). Ask open questions from STATUS and call answer_question. Whenever a hospital is named, ALWAYS call set_destination (also when answering a question). 'Ambulance is here' -> ambulance_arrived.",

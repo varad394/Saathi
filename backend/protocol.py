@@ -37,8 +37,10 @@ FACT_LINES = {
     "chest_pain": ["RIDER_STILL"],
     "cannot_move_limb": ["RIDER_STILL"],
     "breathing_difficulty": ["RIDER_STILL"],
+    "pain_location": ["RIDER_STILL"],
+    "symptom": ["RIDER_STILL"],  # ANY other symptom, described by the LLM in `detail`
 }
-FACT_KINDS = list(FACT_LINES) + ["face_down", "minor_bleeding", "pain_location", "rider_stopped_responding", "other"]
+FACT_KINDS = list(FACT_LINES) + ["face_down", "minor_bleeding", "rider_stopped_responding", "other"]
 
 # Order in which lines are spoken when one message reports several things (life threats first).
 FACT_PRIORITY = ["not_breathing", "gasping", "heavy_bleeding", "bleeding_not_stopping", "fire_or_fuel", "in_traffic",
@@ -51,7 +53,7 @@ CRITICAL_FACTS = {"not_breathing", "gasping", "heavy_bleeding", "bleeding_not_st
 # Facts worth telling the family about.
 FAMILY_FACTS = {"unresponsive", "responsive", "not_breathing", "breathing_normal", "heavy_bleeding",
                 "rider_stopped_responding", "multiple_casualties", "dizzy", "headache", "confused", "chest_pain",
-                "cannot_move_limb", "breathing_difficulty", "pain_location"}
+                "cannot_move_limb", "breathing_difficulty", "pain_location", "symptom"}
 # Symptoms the 112 operator should hear about straight away (not life-threat lines, but medically important).
 AMBULANCE_FACTS = FAMILY_FACTS
 

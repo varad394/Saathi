@@ -14,14 +14,18 @@ def _fn(name, desc, props=None, required=None):
 
 
 T = {
-    "log_rider_status": _fn("log_rider_status", "Record what the RIDER says about himself and his condition.", {
+    "log_rider_status": _fn("log_rider_status", "Record whether the injured rider is okay. Decide WHO is speaking: "
+                            "speaker=rider when the person talks about HIMSELF in first person (I, my, me, मैं, मेरा, मुझे, ನಾನು, ನನ್ನ); "
+                            "speaker=bystander when someone talks ABOUT him in third person (he, his, वो, उसका, ಅವನು, ಅವರು).", {
         "status": {"type": "string", "enum": ["ok", "injured", "help", "unclear"],
-                   "description": "ok ONLY if the rider himself clearly says he is fine"},
-        "words": {"type": "string", "description": "What he said, verbatim"}}, ["status", "words"]),
+                   "description": "ok = he is fine / doesn't need help / says don't call anyone; injured/help = hurt, pain, symptoms, asks for help; unclear = can't tell"},
+        "speaker": {"type": "string", "enum": ["rider", "bystander", "unknown"]},
+        "words": {"type": "string", "description": "What was said, verbatim"}}, ["status", "speaker", "words"]),
     "record_facts": _fn("record_facts", "Record EVERY new observation in the latest message about the injured rider, as one list. "
                         "The system then speaks the reviewed first-aid instructions. Definitions: nausea = feels like vomiting; "
                         "vomiting = is actually vomiting now; dizzy = dizzy/giddy/chakkar; confused = not making sense; "
-                        "pain_location = where it hurts (put the body part in detail).", {
+                        "pain_location = where it hurts (put the body part in detail); symptom = ANY other symptom not in the list "
+                        "(describe it in detail in plain English, e.g. 'ringing in ears', 'cannot feel fingers').", {
         "facts": {"type": "array", "items": {"type": "object", "properties": {
             "kind": {"type": "string", "enum": P.FACT_KINDS},
             "detail": {"type": "string", "description": "Short English detail, e.g. 'left leg'"}}, "required": ["kind"]}},
@@ -79,7 +83,7 @@ async def run(s, name: str, args_json: str, turn: dict) -> str:
     except json.JSONDecodeError:
         a = {}
     if name == "log_rider_status":
-        r = W.rider_status(a.get("status", "unclear"), a.get("words", ""))
+        r = W.rider_status(a.get("status", "unclear"), a.get("words", ""), a.get("speaker", "unknown"))
         if "_say" in r:
             turn["say"] = r["_say"]
         return json.dumps({"recorded": True})
